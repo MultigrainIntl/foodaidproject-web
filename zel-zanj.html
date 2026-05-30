@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zèl Zanj — Angel Wings | A program of Food Aid Project</title>
+<meta name="description" content="Zèl Zanj (Angel Wings) ships split beans as food relief through NGO partners across the Caribbean and Central America. A program of Food Aid Project, Inc., a 501(c)(3) nonprofit.">
+
+<meta property="og:title" content="Zèl Zanj — Angel Wings | A program of Food Aid Project">
+<meta property="og:description" content="Split beans shipped as food relief across the Caribbean and Central America — a program of Food Aid Project, a 501(c)(3) nonprofit.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.foodaidproject.org/zel-zanj.html">
+<meta property="og:image" content="https://www.foodaidproject.org/fap-logo-full.png">
+
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/fap-mark-180.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+<style>
+  /* ---------- Brand tokens (shared with Home) ---------- */
+  :root{
+    --brand-orange:#F6801E;
+    --brand-brown:#3B2314;
+    --action:#C2410C;
+    --action-hover:#9A3412;
+    --ink:#3B2314;
+    --ink-muted:#57463A;
+    --on-orange:#3B2314;
+    --bg:#FFFFFF;
+    --bg-warm:#FDF6EF;
+    --surface-dark:#2A1A10;
+    --border:#E7DDD3;
+    --success:#157347;
+    --radius:14px;
+    --maxw:1140px;
+    --head:"Source Sans 3", "Myriad Pro", Arial, sans-serif;
+    --body:Arial, "Helvetica Neue", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:var(--body);color:var(--ink);background:var(--bg);line-height:1.6;font-size:18px;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:var(--head);font-weight:900;color:var(--brand-brown);line-height:1.15;margin:0 0 .4em;}
+  h2{font-size:clamp(1.6rem,3.2vw,2.4rem);}
+  h3{font-size:1.25rem;font-weight:700;}
+  p{margin:0 0 1rem;}
+  a{color:var(--action);}
+  a:hover{color:var(--action-hover);}
+  img{max-width:100%;display:block;}
+  a:focus-visible, button:focus-visible, .btn:focus-visible{outline:3px solid var(--action);outline-offset:2px;border-radius:4px;}
+  .skip{position:absolute;left:-999px;top:0;background:var(--brand-brown);color:#fff;padding:.6rem 1rem;z-index:1000;border-radius:0 0 6px 0;}
+  .skip:focus{left:0;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 1.25rem;}
+
+  /* Buttons */
+  .btn{display:inline-block;font-family:var(--head);font-weight:700;font-size:1rem;padding:.8rem 1.5rem;border-radius:var(--radius);text-decoration:none;border:2px solid transparent;cursor:pointer;transition:background .15s,color .15s,border-color .15s;}
+  .btn-primary{background:var(--action);color:#fff;}
+  .btn-primary:hover{background:var(--action-hover);color:#fff;}
+  .btn-secondary{background:transparent;color:var(--brand-brown);border-color:var(--brand-brown);}
+  .btn-secondary:hover{background:var(--brand-brown);color:#fff;}
+  .btn-on-dark{background:var(--brand-orange);color:var(--on-orange);}
+  .btn-on-dark:hover{background:#ffa24d;color:var(--on-orange);}
+
+  /* Header / nav (shared with Home) */
+  header.site{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 0;}
+  .brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--brand-brown);}
+  .brand .mark{width:46px;height:42px;flex:none;display:block;}
+  .brand .name{font-family:var(--head);font-weight:900;font-size:1.15rem;line-height:1.05;}
+  .brand .name small{display:block;font-weight:600;font-size:.7rem;color:var(--ink-muted);letter-spacing:.02em;}
+  nav.primary ul{display:flex;gap:1.4rem;list-style:none;margin:0;padding:0;align-items:center;}
+  nav.primary a{text-decoration:none;color:var(--brand-brown);font-family:var(--head);font-weight:600;font-size:1rem;padding:.3rem 0;border-bottom:2px solid transparent;}
+  nav.primary a:hover{border-bottom-color:var(--brand-orange);color:var(--brand-brown);}
+  .nav-toggle{display:none;background:none;border:2px solid var(--border);border-radius:8px;padding:.4rem .6rem;cursor:pointer;}
+  .nav-toggle svg{display:block;}
+  @media (max-width:860px){
+    nav.primary{position:absolute;top:100%;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--border);display:none;}
+    nav.primary.open{display:block;}
+    nav.primary ul{flex-direction:column;align-items:stretch;gap:0;padding:.5rem 1.25rem 1rem;}
+    nav.primary li{border-bottom:1px solid var(--border);}
+    nav.primary li:last-child{border-bottom:none;padding-top:.6rem;}
+    nav.primary a{display:block;padding:.8rem 0;}
+    .nav-toggle{display:inline-flex;}
+  }
+
+  /* Breadcrumb */
+  .crumb{background:var(--bg-warm);border-bottom:1px solid var(--border);font-size:.9rem;}
+  .crumb .wrap{padding:.6rem 1.25rem;color:var(--ink-muted);}
+  .crumb a{color:var(--ink-muted);text-decoration:none;}
+  .crumb a:hover{color:var(--action);text-decoration:underline;}
+
+  /* Hero */
+  .hero{background:radial-gradient(1200px 400px at 80% -10%, rgba(246,128,30,.18), transparent 60%), var(--bg-warm);border-bottom:1px solid var(--border);}
+  .hero .wrap{padding-top:3rem;padding-bottom:3rem;display:grid;grid-template-columns:1.3fr .9fr;gap:2rem;align-items:center;}
+  @media (max-width:820px){.hero .wrap{grid-template-columns:1fr;}}
+  .badge-active{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--head);font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;background:#e6f4ec;color:#0f5132;border:1px solid #abd5bd;padding:.25rem .7rem;border-radius:999px;}
+  .hero .eyebrow{font-family:var(--head);font-weight:600;color:var(--ink-muted);font-size:.95rem;margin:.9rem 0 .3rem;}
+  .hero h1{font-size:clamp(2.4rem,6vw,4rem);margin:.2rem 0 0;}
+  .hero .creole{font-family:var(--head);font-weight:700;color:var(--brand-orange);font-size:clamp(1.2rem,2.5vw,1.6rem);margin:.2rem 0 1rem;}
+  .hero .lede{font-size:clamp(1.1rem,2.3vw,1.3rem);max-width:48ch;}
+  .cta-row{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.3rem;}
+
+  /* Hero emblem */
+  .emblem{display:flex;justify-content:center;}
+  .emblem img{width:min(320px,80%);height:auto;filter:drop-shadow(0 8px 24px rgba(59,35,20,.18));}
+
+  /* Sections */
+  section{padding:3rem 0;}
+  section.warm{background:var(--bg-warm);}
+  .eyebrow-k{font-family:var(--head);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:.8rem;color:var(--action);margin-bottom:.4rem;}
+  .section-head{max-width:62ch;margin-bottom:1.6rem;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;}
+  @media (max-width:760px){.two{grid-template-columns:1fr;}}
+  .lead{font-size:1.08rem;}
+
+  /* Flow steps */
+  .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.2rem;}
+  @media (max-width:700px){.flow{grid-template-columns:1fr;}}
+  .step{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.3rem;position:relative;}
+  .step .n{font-family:var(--head);font-weight:900;color:var(--brand-orange);font-size:1.6rem;line-height:1;}
+  .step h3{margin:.5rem 0 .3rem;font-size:1.1rem;}
+  .step p{font-size:.95rem;color:var(--ink-muted);margin:0;}
+
+  /* Countries */
+  .countries{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem;}
+  .country{background:#fff;border:1px solid var(--border);border-radius:999px;padding:.45rem 1rem;font-weight:600;font-family:var(--head);font-size:.95rem;color:var(--brand-brown);}
+
+  /* Why split beans — feature cards */
+  .feat{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.2rem;}
+  @media (max-width:760px){.feat{grid-template-columns:1fr;}}
+  .feat .card{background:#fff;border:1px solid var(--border);border-top:4px solid var(--brand-orange);border-radius:var(--radius);padding:1.3rem;}
+  .feat .card h3{font-size:1.05rem;}
+  .feat .card p{font-size:.95rem;color:var(--ink-muted);margin:0;}
+
+  /* Economics stat band */
+  .econ{background:var(--brand-brown);color:#fff;border-radius:var(--radius);padding:1.8rem;}
+  .econ h2{color:#fff;}
+  .econ .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:1.2rem;}
+  @media (max-width:700px){.econ .grid3{grid-template-columns:1fr;}}
+  .econ .big{font-family:var(--head);font-weight:900;font-size:2.1rem;color:var(--brand-orange);line-height:1;}
+  .econ .lbl{font-size:.95rem;color:#e7d8c9;margin-top:.4rem;}
+  .econ .note{font-size:.82rem;color:#cbb6a3;margin-top:1.3rem;}
+  .placeholder{background:repeating-linear-gradient(45deg,#fff,#fff 10px,#fdf6ef 10px,#fdf6ef 20px);border:1px dashed var(--action);border-radius:8px;padding:.4rem .6rem;font-size:.82rem;color:var(--action);font-weight:600;display:inline-block;}
+  .placeholder.on-dark{background:none;border-color:var(--brand-orange);color:#ffd9b3;}
+
+  /* Bag / dignity callout */
+  .callout{background:#fff;border:1px solid var(--border);border-left:5px solid var(--brand-orange);border-radius:var(--radius);padding:1.4rem 1.5rem;}
+
+  /* Donate band */
+  .donate{background:var(--surface-dark);color:#fff;text-align:center;}
+  .donate h2{color:#fff;}
+  .donate p{color:#e7d8c9;max-width:54ch;margin:0 auto 1.3rem;}
+  .donate .big{font-family:var(--head);font-weight:900;color:var(--brand-orange);font-size:2rem;}
+
+  /* Footer (shared with Home) */
+  footer.site{background:var(--surface-dark);color:#e7d8c9;padding:2.5rem 0 2rem;}
+  footer.site a{color:#fff;text-decoration:none;}
+  footer.site a:hover{text-decoration:underline;color:#fff;}
+  .foot-grid{display:grid;gap:1.5rem;grid-template-columns:1.4fr 1fr 1fr;}
+  @media (max-width:700px){.foot-grid{grid-template-columns:1fr;}}
+  footer .mission{max-width:40ch;font-size:.95rem;}
+  footer h4{color:#fff;font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;}
+  footer ul{list-style:none;margin:0;padding:0;}
+  footer li{margin-bottom:.4rem;font-size:.95rem;}
+  .foot-legal{border-top:1px solid #4a3526;margin-top:1.8rem;padding-top:1.2rem;font-size:.85rem;display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;justify-content:space-between;}
+  .brand .name.foot{color:#fff;}
+
+  @media (prefers-reduced-motion:no-preference){
+    .reveal{opacity:0;transform:translateY(12px);animation:rise .6s ease forwards;}
+    .reveal.d1{animation-delay:.05s;} .reveal.d2{animation-delay:.15s;} .reveal.d3{animation-delay:.25s;} .reveal.d4{animation-delay:.35s;}
+    @keyframes rise{to{opacity:1;transform:none;}}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<!-- ===================== HEADER (shared) ===================== -->
+<header class="site">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Food Aid Project home">
+      <img class="mark" src="/fap-mark.svg" width="46" height="42" alt="" aria-hidden="true">
+      <span class="name">Food Aid Project<small>A 501(c)(3) nonprofit</small></span>
+    </a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <nav class="primary" id="primary-nav" aria-label="Primary">
+      <ul>
+        <li><a href="/#programs">Programs</a></li>
+        <li><a href="/#impact">Impact</a></li>
+        <li><a href="/#about">About</a></li>
+        <li><a href="/#get-involved">Get Involved</a></li>
+        <li><a class="btn btn-primary" href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- Breadcrumb -->
+<div class="crumb">
+  <div class="wrap"><a href="/">Home</a> &nbsp;›&nbsp; <a href="/#programs">Programs</a> &nbsp;›&nbsp; <span>Zèl Zanj — International Food Distribution</span></div>
+</div>
+
+<main id="main">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="badge-active reveal d1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f5132" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          Active program
+        </span>
+        <p class="eyebrow reveal d2">International Food Distribution · A program of Food Aid Project</p>
+        <h1 class="reveal d2">Zèl Zanj</h1>
+        <div class="creole reveal d2">“Angel Wings”</div>
+        <p class="lede reveal d3">We farm, process, and ship split beans — Angel Wings — through NGO partners to families across the Caribbean and Central America. The shortest path from farm to people in need, at the lowest possible cost.</p>
+        <div class="cta-row reveal d4">
+          <a class="btn btn-primary" href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate via Every.org</a>
+          <a class="btn btn-secondary" href="#how">See how it works</a>
+        </div>
+      </div>
+      <div class="emblem reveal d3" aria-hidden="true">
+        <img src="/fap-mark.svg" width="320" height="290" alt="">
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ORIGIN STORY ===================== -->
+  <section>
+    <div class="wrap two">
+      <div>
+        <p class="eyebrow-k">The name</p>
+        <h2>Why “Angel Wings”</h2>
+        <p class="lead">Zèl Zanj is Haitian Creole for <em>Angel Wings</em>. We call the beans we ship for food relief “Angel Wings” because of the shape of a split bean. We named the program Zèl Zanj because Haiti was the first country where we delivered them.</p>
+      </div>
+      <div class="callout">
+        <p class="eyebrow-k">A bag with a second life</p>
+        <p style="margin:0;">The 50&nbsp;kg beans travel in high-quality woven bags, printed with the Angel Wings mosaic — artwork inspired by Medieval and contemporary Haitian mosaic tile. The bags are chosen so families can reuse them to carry supplies long after the beans are gone: a small measure of dignity and sustainability built into the program.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== HOW IT WORKS ===================== -->
+  <section id="how" class="warm">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow-k">How it works</p>
+        <h2>From farm to family, directly</h2>
+        <p>Zèl Zanj is vertically integrated. The direct, integrated path — farm to people in need — delivers the greatest impact for the least cost.</p>
+      </div>
+      <div class="flow">
+        <div class="step">
+          <div class="n">1</div>
+          <h3>Farm &amp; harvest</h3>
+          <p>We support farmers across multiple countries to grow and harvest beans at scale.</p>
+        </div>
+        <div class="step">
+          <div class="n">2</div>
+          <h3>Process &amp; pack</h3>
+          <p>Beans are split, processed, and packed into 50&nbsp;kg woven bags branded as “Angel Wings.”</p>
+        </div>
+        <div class="step">
+          <div class="n">3</div>
+          <h3>Distribute via NGOs</h3>
+          <p>We expedite relief through NGO partner organizations to people in need across the region.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:2rem;">
+        <p class="eyebrow-k">Where we serve</p>
+        <h3 style="margin-bottom:.2rem;">Seven countries across the Caribbean &amp; Central America</h3>
+        <div class="countries">
+          <span class="country">Grenada</span>
+          <span class="country">Guatemala</span>
+          <span class="country">Guyana</span>
+          <span class="country">Haiti</span>
+          <span class="country">Honduras</span>
+          <span class="country">Jamaica</span>
+          <span class="country">Trinidad &amp; Tobago</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== WHY SPLIT BEANS ===================== -->
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow-k">The insight</p>
+        <h2>Why split beans go further</h2>
+        <p>A split bean isn't just cheaper to buy — it changes the economics of the meal itself, especially where cooking fuel is scarce.</p>
+      </div>
+      <div class="feat">
+        <div class="card">
+          <h3>Cook faster, cost less</h3>
+          <p>Split beans cook faster and cost less than whole beans — savings that reach both our NGO partners and the families they serve.</p>
+        </div>
+        <div class="card">
+          <h3>Fuel is the hidden cost</h3>
+          <p>Over 40% of the world cooks over an open fire — higher in deforested Haiti — and the wood, charcoal, or gas can cost more than the beans themselves.</p>
+        </div>
+        <div class="card">
+          <h3>Savings on both ends</h3>
+          <p>Faster cooking means less fuel burned per meal. Zèl Zanj saves partners money on the food and saves families money on the fire.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ECONOMICS ===================== -->
+  <section class="warm">
+    <div class="wrap">
+      <div class="econ">
+        <p class="eyebrow-k" style="color:var(--brand-orange);">The economics</p>
+        <h2>Built for impact per dollar</h2>
+        <div class="grid3">
+          <div>
+            <div class="big">10 portions</div>
+            <div class="lbl">per pound of beans</div>
+          </div>
+          <div>
+            <div class="big">518,000</div>
+            <div class="lbl">portions in a single 20-ft container (51,800 lbs)</div>
+          </div>
+          <div>
+            <div class="big">~$0.035</div>
+            <div class="lbl">delivered cost per portion, at under $0.35/lb</div>
+          </div>
+        </div>
+        <p class="note">
+          Figures describe the program's unit economics and shipping capacity, drawn from program materials — they are not a claim of meals already delivered in a given period.
+          <span class="placeholder on-dark">[Verify &amp; date before publish]</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== OPERATING NOTE ===================== -->
+  <section>
+    <div class="wrap">
+      <div class="callout">
+        <p class="eyebrow-k">A note on freight &amp; status</p>
+        <p style="margin:0;">During 2020–21, ocean-freight rates rose dramatically — by roughly tenfold — which interrupted shipments; rates began easing in late 2022.
+        <span class="placeholder">[Confirm current operating status / shipments since 2022]</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DONATE BAND ===================== -->
+  <section class="donate">
+    <div class="wrap">
+      <p class="eyebrow-k" style="color:var(--brand-orange);">Support Zèl Zanj</p>
+      <h2>Turn dollars into meals</h2>
+      <p>Donations to Food Aid Project support Zèl Zanj and our other programs. Give once, monthly, or yearly through Every.org — 100% tax-deductible.</p>
+      <p><a class="btn btn-on-dark" href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate via Every.org</a></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== FOOTER (shared) ===================== -->
+<footer class="site">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <span class="brand" style="margin-bottom:.6rem;">
+          <img class="mark" src="/fap-mark-ondark.svg" width="40" height="36" alt="" aria-hidden="true">
+          <span class="name foot">Food Aid Project</span>
+        </span>
+        <p class="mission">Advancing food and economic security by improving access to, and efficiency within, the bulk food procurement and distribution network.</p>
+      </div>
+      <div>
+        <h4>Programs</h4>
+        <ul>
+          <li><a href="/zel-zanj.html">International Food Distribution</a></li>
+          <li><a href="/#programs">US Food Bank Supply</a></li>
+          <li><a href="/#programs">Decision-Support Engine</a></li>
+          <li><a href="/#programs">GIS Crop-Yield Prediction</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Organization</h4>
+        <ul>
+          <li><a href="/#about">About</a></li>
+          <li><a href="/#about">Trust &amp; Transparency</a></li>
+          <li><a href="/#get-involved">Contact</a></li>
+          <li><a href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-legal">
+      <span>Food Aid Project, Inc. · 501(c)(3) nonprofit · EIN&nbsp;27-3474278 · Fort Collins, Colorado</span>
+      <span>Zèl Zanj is a program of Food Aid Project, Inc.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var btn=document.querySelector('.nav-toggle');
+    var nav=document.getElementById('primary-nav');
+    btn.addEventListener('click',function(){
+      var open=nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded',open?'true':'false');
+      btn.setAttribute('aria-label',open?'Close menu':'Open menu');
+    });
+    nav.addEventListener('click',function(e){
+      if(e.target.tagName==='A'&&nav.classList.contains('open')){
+        nav.classList.remove('open');
+        btn.setAttribute('aria-expanded','false');
+        btn.setAttribute('aria-label','Open menu');
+      }
+    });
+  })();
+</script>
+</body>
+</html>
