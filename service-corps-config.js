@@ -5,7 +5,7 @@
  * Never place a spreadsheet ID, API key, token, respondent data, or other secret here.
  */
 window.FAP_SERVICE_CORPS_CONFIG = Object.freeze({
-  endpoint: '',
+  endpoint: 'https://script.google.com/macros/s/AKfycbzVIx_2Qc0w9f4ch7b3uo-n8Krs86r4_DAAT8CPhwkfCGpsA3WryOApucfUp9n9eqou/exec',
   responseOrigins: [
     'https://script.google.com',
     'https://script.googleusercontent.com'
