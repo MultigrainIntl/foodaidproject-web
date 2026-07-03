@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the Food Aid Project static website."""
+"""Validate the Food Aid Project static website and intake source."""
 
 from __future__ import annotations
 
@@ -27,6 +27,20 @@ class SiteParser(HTMLParser):
             self.ids.add(element_id)
 
 
+def check_javascript(source: str, label: str, failures: list[str]) -> None:
+    if not source.strip():
+        return
+    with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as handle:
+        handle.write(source)
+        script_path = Path(handle.name)
+    try:
+        result = subprocess.run(["node", "--check", str(script_path)], capture_output=True, text=True)
+        if result.returncode:
+            failures.append(f"{label}: {result.stderr.strip()}")
+    finally:
+        script_path.unlink(missing_ok=True)
+
+
 def main() -> int:
     failures: list[str] = []
     html_files = sorted(ROOT.glob("*.html"))
@@ -49,22 +63,32 @@ def main() -> int:
 
         scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", text, flags=re.I | re.S)
         for number, script in enumerate(scripts, start=1):
-            if not script.strip():
-                continue
-            with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as handle:
-                handle.write(script)
-                script_path = Path(handle.name)
-            try:
-                result = subprocess.run(["node", "--check", str(script_path)], capture_output=True, text=True)
-                if result.returncode:
-                    failures.append(f"{path.name}: script {number}: {result.stderr.strip()}")
-            finally:
-                script_path.unlink(missing_ok=True)
+            check_javascript(script, f"{path.name}: inline script {number}", failures)
 
     required = {
         "index.html": ["/service-corps.html", "/privacy.html", "Skills for Food Security Service Corps"],
-        "service-corps.html": ['id="intake-form"', 'id="consent-contact"', "info@foodaidproject.org", "/privacy.html"],
+        "service-corps.html": [
+            'id="intake-form"',
+            'name="serviceFormat" value="Remote"',
+            'id="outreach-section"',
+            "Outreach, social media, digital content, or influencer ambassador",
+            "Food Aid Project does not currently manage in-person volunteer programs",
+            "info@foodaidproject.org",
+            "/privacy.html",
+            "/service-corps-config.js",
+        ],
         "privacy.html": ["info@foodaidproject.org", "request correction or deletion"],
+        "service-corps-config.js": ["endpoint: ''", "responseOrigins", "outreachAdapted"],
+        "apps-script/service-corps-network/Code.gs": [
+            "Service Corps Network",
+            "Intake",
+            "FollowUp",
+            "Opportunities",
+            "JoieOS Queue",
+            "sendAcknowledgment_",
+            "sendReviewReminders",
+        ],
+        "apps-script/service-corps-network/appsscript.json": ["ANYONE_ANONYMOUS", "USER_DEPLOYING"],
     }
 
     for filename, terms in required.items():
@@ -76,6 +100,24 @@ def main() -> int:
         for term in terms:
             if term not in text:
                 failures.append(f"{filename}: missing required term: {term}")
+
+    service_corps = (ROOT / "service-corps.html").read_text(encoding="utf-8")
+    forbidden = [
+        "Either remote or in person",
+        "Hands-on distribution, events, facilities, or field work",
+        "Agriculture, food, farming, or processing",
+    ]
+    for term in forbidden:
+        if term in service_corps:
+            failures.append(f"service-corps.html: forbidden legacy option remains: {term}")
+
+    config = (ROOT / "service-corps-config.js").read_text(encoding="utf-8")
+    if re.search(r"endpoint:\s*['\"]https?://", config):
+        failures.append("service-corps-config.js: production endpoint must remain blank until approved")
+
+    apps_script = ROOT / "apps-script/service-corps-network/Code.gs"
+    if apps_script.is_file():
+        check_javascript(apps_script.read_text(encoding="utf-8"), "Code.gs syntax", failures)
 
     print("Food Aid Project site validation")
     print(f"HTML files checked: {len(html_files)}")
