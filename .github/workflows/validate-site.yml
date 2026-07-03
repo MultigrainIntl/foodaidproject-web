@@ -26,3 +26,25 @@ jobs:
 
       - name: Validate HTML and inline JavaScript
         run: python scripts/validate-site.py
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.53.2
+          npx playwright install --with-deps chromium
+
+      - name: Start local site
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 > /tmp/foodaid-site.log 2>&1 &
+          echo $! > /tmp/foodaid-site.pid
+          sleep 2
+
+      - name: Run rendered browser verification
+        run: node scripts/browser-check.mjs
+
+      - name: Upload rendered proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-corps-rendered-proof
+          path: artifacts/site-proof
+          if-no-files-found: warn
