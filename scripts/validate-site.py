@@ -82,7 +82,7 @@ def main() -> int:
             "/service-corps-config.js",
         ],
         "privacy.html": ["info@foodaidproject.org", "request correction or deletion"],
-        "service-corps-config.js": ["endpoint:", "responseOrigins", "outreachAdapted"],
+        "service-corps-config.js": ["endpoint:", "responseOrigins"],
         "apps-script/service-corps-network/Code.gs": [
             "Service Corps Network",
             "Intake",
@@ -91,6 +91,11 @@ def main() -> int:
             "JoieOS Queue",
             "sendAcknowledgment_",
             "sendReviewReminders",
+            "Relationships and Audiences",
+            "Outreach Platforms",
+            "publicProfile",
+            "appendMappedRow_",
+            "SCHEMA_MISMATCH_",
         ],
         "apps-script/service-corps-network/appsscript.json": [
             "ANYONE_ANONYMOUS",
@@ -126,9 +131,20 @@ def main() -> int:
     elif endpoint_match.group(1) not in ("", APPROVED_SERVICE_CORPS_ENDPOINT):
         failures.append("service-corps-config.js: endpoint is not the approved Service Corps deployment")
 
+    if "outreachAdapted" in config:
+        failures.append("service-corps-config.js: legacy outreach compatibility adapter must be removed")
+
     apps_script = ROOT / "apps-script/service-corps-network/Code.gs"
     if apps_script.is_file():
         check_javascript(apps_script.read_text(encoding="utf-8"), "Code.gs syntax", failures)
+
+    schema_test = ROOT / "scripts/validate-service-corps-schema.js"
+    if not schema_test.is_file():
+        failures.append("missing required file: scripts/validate-service-corps-schema.js")
+    else:
+        result = subprocess.run(["node", str(schema_test)], capture_output=True, text=True)
+        if result.returncode:
+            failures.append(f"Service Corps schema mapping: {result.stderr.strip() or result.stdout.strip()}")
 
     print("Food Aid Project site validation")
     print(f"HTML files checked: {len(html_files)}")

@@ -1,5 +1,5 @@
 const FAP = Object.freeze({
-  VERSION: '1.0.0',
+  VERSION: '1.1.0',
   INTAKE_SHEET: 'Intake',
   FOLLOW_UP_SHEET: 'FollowUp',
   OPPORTUNITIES_SHEET: 'Opportunities',
@@ -17,11 +17,13 @@ const INTAKE_HEADERS = [
   'Phone', 'Preferred Contact', 'City', 'Region', 'Country', 'Adult Status',
   'Participation', 'Hours Needed', 'Deadline', 'Jurisdiction', 'Approval Status',
   'Authority Notes', 'Skills Summary', 'Love To Do', 'Skill Areas',
-  'Relationships', 'Meaningful Service', 'Service Format', 'Weekly Hours',
-  'Start Time', 'Schedule', 'Travel', 'Heard About', 'Referrer',
-  'Consent Contact', 'Consent Updates', 'Sensitive Info Acknowledged',
-  'No Credit Guarantee Acknowledged', 'Source Origin', 'Last Contact At',
-  'Next Review At', 'Assigned To', 'Internal Notes', 'Record Version'
+  'Relationships and Audiences', 'Meaningful Service', 'Outreach Platforms',
+  'Public Profile', 'Audience Size', 'Audience Description', 'Content Formats',
+  'Outreach Ideas', 'Service Format', 'Weekly Hours', 'Start Time', 'Time Zone',
+  'Schedule', 'Heard About', 'Referrer', 'Consent Contact', 'Consent Updates',
+  'Sensitive Info Acknowledged', 'No Credit Guarantee Acknowledged',
+  'Source Origin', 'Last Contact At', 'Next Review At', 'Assigned To',
+  'Internal Notes', 'Record Version'
 ];
 
 const FOLLOW_UP_HEADERS = [
@@ -287,11 +289,17 @@ function normalizeRequest_(e) {
     skillArea: all('skillArea'),
     relationships: first('relationships'),
     meaningful: first('meaningful'),
+    outreachPlatform: all('outreachPlatform'),
+    publicProfile: first('publicProfile'),
+    audienceSize: first('audienceSize'),
+    audienceDescription: first('audienceDescription'),
+    contentFormats: first('contentFormats'),
+    outreachIdeas: first('outreachIdeas'),
     serviceFormat: first('serviceFormat'),
     weeklyHours: first('weeklyHours'),
     startTime: first('startTime'),
+    timeZone: first('timeZone'),
     schedule: first('schedule'),
-    travel: first('travel'),
     heardAbout: first('heardAbout'),
     referrer: first('referrer'),
     consentContact: first('consentContact') === 'on' || first('consentContact') === 'Yes',
@@ -409,18 +417,58 @@ function findOpportunityMatches_(payload, routingTags) {
 }
 
 function appendIntake_(intakeId, submittedAt, payload, routing, matches, nextReviewAt) {
-  const sheet = getSheet_(FAP.INTAKE_SHEET);
-  sheet.appendRow([
-    intakeId, submittedAt, 'NEW', routing.priority, routing.score,
-    routing.tags.join(', '), routing.flags.join(', '), formatMatches_(matches), payload.fullName, payload.email,
-    payload.phone, payload.contactMethod, payload.city, payload.region, payload.country, payload.adultStatus,
-    payload.participation.join('; '), payload.hoursNeeded, payload.deadline, payload.jurisdiction, payload.approvalStatus,
-    payload.authorityNotes, payload.skillsSummary, payload.loveToDo, payload.skillArea.join('; '),
-    payload.relationships, payload.meaningful, payload.serviceFormat, payload.weeklyHours,
-    payload.startTime, payload.schedule, payload.travel, payload.heardAbout, payload.referrer,
-    payload.consentContact ? 'Yes' : 'No', payload.updates ? 'Yes' : 'No', payload.acknowledgeSensitive ? 'Yes' : 'No',
-    payload.acknowledgeStatus ? 'Yes' : 'No', payload.sourceOrigin, '', nextReviewAt, '', '', FAP.VERSION
-  ]);
+  appendMappedRow_(getSheet_(FAP.INTAKE_SHEET), INTAKE_HEADERS, {
+    'Intake ID': intakeId,
+    'Submitted At': submittedAt,
+    'Status': 'NEW',
+    'Review Priority': routing.priority,
+    'Priority Score': routing.score,
+    'Routing Tags': routing.tags.join(', '),
+    'Review Flags': routing.flags.join(', '),
+    'Suggested Matches': formatMatches_(matches),
+    'Full Name': payload.fullName,
+    'Email': payload.email,
+    'Phone': payload.phone,
+    'Preferred Contact': payload.contactMethod,
+    'City': payload.city,
+    'Region': payload.region,
+    'Country': payload.country,
+    'Adult Status': payload.adultStatus,
+    'Participation': payload.participation.join('; '),
+    'Hours Needed': payload.hoursNeeded,
+    'Deadline': payload.deadline,
+    'Jurisdiction': payload.jurisdiction,
+    'Approval Status': payload.approvalStatus,
+    'Authority Notes': payload.authorityNotes,
+    'Skills Summary': payload.skillsSummary,
+    'Love To Do': payload.loveToDo,
+    'Skill Areas': payload.skillArea.join('; '),
+    'Relationships and Audiences': payload.relationships,
+    'Meaningful Service': payload.meaningful,
+    'Outreach Platforms': payload.outreachPlatform.join('; '),
+    'Public Profile': payload.publicProfile,
+    'Audience Size': payload.audienceSize,
+    'Audience Description': payload.audienceDescription,
+    'Content Formats': payload.contentFormats,
+    'Outreach Ideas': payload.outreachIdeas,
+    'Service Format': payload.serviceFormat,
+    'Weekly Hours': payload.weeklyHours,
+    'Start Time': payload.startTime,
+    'Time Zone': payload.timeZone,
+    'Schedule': payload.schedule,
+    'Heard About': payload.heardAbout,
+    'Referrer': payload.referrer,
+    'Consent Contact': payload.consentContact ? 'Yes' : 'No',
+    'Consent Updates': payload.updates ? 'Yes' : 'No',
+    'Sensitive Info Acknowledged': payload.acknowledgeSensitive ? 'Yes' : 'No',
+    'No Credit Guarantee Acknowledged': payload.acknowledgeStatus ? 'Yes' : 'No',
+    'Source Origin': payload.sourceOrigin,
+    'Last Contact At': '',
+    'Next Review At': nextReviewAt,
+    'Assigned To': '',
+    'Internal Notes': '',
+    'Record Version': FAP.VERSION
+  });
 }
 
 function appendFollowUp_(intakeId, submittedAt, payload, routing, matches, nextReviewAt) {
@@ -600,8 +648,31 @@ function ensureSheet_(spreadsheet, name, headers) {
     sheet.setFrozenRows(1);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#f3e2d2');
     sheet.autoResizeColumns(1, headers.length);
+  } else {
+    assertHeaders_(sheet, headers);
   }
   return sheet;
+}
+
+function appendMappedRow_(sheet, requiredHeaders, record) {
+  assertHeaders_(sheet, requiredHeaders);
+  const lastColumn = sheet.getLastColumn();
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].map(function(value) { return String(value); });
+  const row = headers.map(function(header) {
+    return Object.prototype.hasOwnProperty.call(record, header) ? record[header] : '';
+  });
+  sheet.appendRow(row);
+}
+
+function assertHeaders_(sheet, requiredHeaders) {
+  const lastColumn = sheet.getLastColumn();
+  if (lastColumn < 1) throw new Error('SCHEMA_MISMATCH_' + sheet.getName() + '_NO_HEADERS');
+  const actual = sheet.getRange(1, 1, 1, lastColumn).getValues()[0].map(function(value) { return String(value).trim(); });
+  const missing = requiredHeaders.filter(function(header) { return actual.indexOf(header) === -1; });
+  const duplicates = actual.filter(function(header, index) { return header && actual.indexOf(header) !== index; });
+  if (missing.length || duplicates.length) {
+    throw new Error('SCHEMA_MISMATCH_' + sheet.getName() + '_MISSING_' + missing.join('|') + '_DUPLICATE_' + unique_(duplicates).join('|'));
+  }
 }
 
 function getSheet_(name) {
