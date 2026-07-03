@@ -11,6 +11,10 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+APPROVED_SERVICE_CORPS_ENDPOINT = (
+    "https://script.google.com/macros/s/"
+    "AKfycbzVIx_2Qc0w9f4ch7b3uo-n8Krs86r4_DAAT8CPhwkfCGpsA3WryOApucfUp9n9eqou/exec"
+)
 
 
 class SiteParser(HTMLParser):
@@ -78,7 +82,7 @@ def main() -> int:
             "/service-corps-config.js",
         ],
         "privacy.html": ["info@foodaidproject.org", "request correction or deletion"],
-        "service-corps-config.js": ["endpoint: ''", "responseOrigins", "outreachAdapted"],
+        "service-corps-config.js": ["endpoint:", "responseOrigins", "outreachAdapted"],
         "apps-script/service-corps-network/Code.gs": [
             "Service Corps Network",
             "Intake",
@@ -88,7 +92,11 @@ def main() -> int:
             "sendAcknowledgment_",
             "sendReviewReminders",
         ],
-        "apps-script/service-corps-network/appsscript.json": ["ANYONE_ANONYMOUS", "USER_DEPLOYING"],
+        "apps-script/service-corps-network/appsscript.json": [
+            "ANYONE_ANONYMOUS",
+            "USER_DEPLOYING",
+            "https://www.googleapis.com/auth/userinfo.email",
+        ],
     }
 
     for filename, terms in required.items():
@@ -112,8 +120,11 @@ def main() -> int:
             failures.append(f"service-corps.html: forbidden legacy option remains: {term}")
 
     config = (ROOT / "service-corps-config.js").read_text(encoding="utf-8")
-    if re.search(r"endpoint:\s*['\"]https?://", config):
-        failures.append("service-corps-config.js: production endpoint must remain blank until approved")
+    endpoint_match = re.search(r"endpoint:\s*['\"]([^'\"]*)['\"]", config)
+    if not endpoint_match:
+        failures.append("service-corps-config.js: endpoint setting is missing")
+    elif endpoint_match.group(1) not in ("", APPROVED_SERVICE_CORPS_ENDPOINT):
+        failures.append("service-corps-config.js: endpoint is not the approved Service Corps deployment")
 
     apps_script = ROOT / "apps-script/service-corps-network/Code.gs"
     if apps_script.is_file():
