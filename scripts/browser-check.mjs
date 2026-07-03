@@ -15,7 +15,7 @@ try {
   await page.getByRole('heading', { name: 'Skills for Food Security Service Corps' }).waitFor();
   await page.screenshot({ path: `${outputDir}/homepage-desktop.png`, fullPage: true });
 
-  await page.getByRole('link', { name: 'Complete the interest questionnaire' }).click();
+  await page.getByRole('link', { name: 'Complete the interest questionnaire' }).first().click();
   await page.waitForURL(/service-corps\.html/);
   await page.getByRole('heading', { name: 'The hours are yours.' }).waitFor();
   await page.getByRole('heading', { name: 'Help us understand the right fit' }).waitFor();
