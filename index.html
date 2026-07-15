@@ -1,499 +1,743 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Food Aid Project — Bulk food, delivered efficiently to people in need</title>
-<meta name="description" content="Food Aid Project, Inc. is a 501(c)(3) nonprofit that moves bulk food cheaper and faster to people in need — through farm-to-community distribution, food bank supply, volunteer engagement, and decision-support technology.">
-
-<!-- Open Graph / SEO basics -->
-<meta property="og:title" content="Food Aid Project — food and economic security through smarter bulk food distribution">
-<meta property="og:description" content="A 501(c)(3) nonprofit improving access to, and efficiency within, the bulk food procurement and distribution network.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://www.foodaidproject.org/">
-<meta property="og:image" content="https://www.foodaidproject.org/fap-logo-full.png">
-
-<!-- Favicons / touch icon (from brand mark) -->
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32">
-<link rel="apple-touch-icon" href="/fap-mark-180.png">
-
-<!-- Source Sans 3 Bold = open-license web substitute for Myriad Pro Bold (brand headings) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;900&display=swap" rel="stylesheet">
-
-<style>
-  /* ---------- Brand tokens (from FAP-Brand-Palette) ---------- */
-  :root{
-    --brand-orange:#F6801E;   /* accents, graphics, large display, fills w/ brown text */
-    --brand-brown:#3B2314;    /* primary text & headings */
-    --action:#C2410C;         /* links & primary buttons w/ white text (5.2:1) */
-    --action-hover:#9A3412;   /* hover/active (7.1:1) */
-    --ink:#3B2314;            /* body text on white (~14:1) */
-    --ink-muted:#57463A;      /* secondary text (8.9:1) */
-    --on-orange:#3B2314;      /* text/icons on brand orange (5.6:1) */
-    --bg:#FFFFFF;
-    --bg-warm:#FDF6EF;        /* soft section background */
-    --surface-dark:#2A1A10;   /* footer / dark sections, white text (~16:1) */
-    --border:#E7DDD3;
-    --success:#157347;
-    --radius:14px;
-    --maxw:1140px;
-    --head:"Source Sans 3", "Myriad Pro", Arial, sans-serif;
-    --body:Arial, "Helvetica Neue", system-ui, sans-serif;
-  }
-
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    margin:0;
-    font-family:var(--body);
-    color:var(--ink);
-    background:var(--bg);
-    line-height:1.6;
-    font-size:18px;
-    -webkit-font-smoothing:antialiased;
-  }
-  h1,h2,h3,h4{font-family:var(--head);font-weight:900;color:var(--brand-brown);line-height:1.15;margin:0 0 .4em;}
-  h2{font-size:clamp(1.6rem,3.2vw,2.4rem);}
-  h3{font-size:1.25rem;font-weight:700;}
-  p{margin:0 0 1rem;}
-  a{color:var(--action);}
-  a:hover{color:var(--action-hover);}
-  img{max-width:100%;display:block;}
-
-  /* Visible focus states (WCAG 2.4.7) */
-  a:focus-visible, button:focus-visible, .btn:focus-visible{
-    outline:3px solid var(--action);
-    outline-offset:2px;
-    border-radius:4px;
-  }
-
-  /* Skip link */
-  .skip{
-    position:absolute;left:-999px;top:0;background:var(--brand-brown);color:#fff;
-    padding:.6rem 1rem;z-index:1000;border-radius:0 0 6px 0;
-  }
-  .skip:focus{left:0;}
-
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 1.25rem;}
-
-  /* ---------- Buttons ---------- */
-  .btn{
-    display:inline-block;font-family:var(--head);font-weight:700;font-size:1rem;
-    padding:.8rem 1.5rem;border-radius:var(--radius);text-decoration:none;
-    border:2px solid transparent;cursor:pointer;transition:background .15s,color .15s,border-color .15s;
-  }
-  .btn-primary{background:var(--action);color:#fff;}
-  .btn-primary:hover{background:var(--action-hover);color:#fff;}
-  .btn-secondary{background:transparent;color:var(--brand-brown);border-color:var(--brand-brown);}
-  .btn-secondary:hover{background:var(--brand-brown);color:#fff;}
-  .btn-on-dark{background:var(--brand-orange);color:var(--on-orange);}
-  .btn-on-dark:hover{background:#ffa24d;color:var(--on-orange);}
-
-  /* ---------- Header / nav ---------- */
-  header.site{
-    position:sticky;top:0;z-index:100;background:var(--bg);
-    border-bottom:1px solid var(--border);
-  }
-  .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 0;}
-  .brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--brand-brown);}
-  .brand .mark{
-    width:46px;height:42px;flex:none;display:block;
-  }
-  .brand .name{font-family:var(--head);font-weight:900;font-size:1.15rem;line-height:1.05;}
-  .brand .name small{display:block;font-weight:600;font-size:.7rem;color:var(--ink-muted);letter-spacing:.02em;}
-  nav.primary ul{display:flex;gap:1.4rem;list-style:none;margin:0;padding:0;align-items:center;}
-  nav.primary a{
-    text-decoration:none;color:var(--brand-brown);font-family:var(--head);font-weight:600;font-size:1rem;
-    padding:.3rem 0;border-bottom:2px solid transparent;
-  }
-  nav.primary a:hover{border-bottom-color:var(--brand-orange);color:var(--brand-brown);}
-  .nav-toggle{display:none;background:none;border:2px solid var(--border);border-radius:8px;padding:.4rem .6rem;cursor:pointer;}
-  .nav-toggle svg{display:block;}
-
-  @media (max-width:860px){
-    nav.primary{
-      position:absolute;top:100%;left:0;right:0;background:var(--bg);
-      border-bottom:1px solid var(--border);display:none;
+<div id="gisit-gateway-prototype">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    #gisit-gateway-prototype {
+      --gw-glass: color-mix(in srgb, var(--background) 84%, transparent);
+      --gw-map: color-mix(in srgb, var(--muted) 78%, var(--background));
+      width: 100%;
+      color: var(--foreground);
     }
-    nav.primary.open{display:block;}
-    nav.primary ul{flex-direction:column;align-items:stretch;gap:0;padding:.5rem 1.25rem 1rem;}
-    nav.primary li{border-bottom:1px solid var(--border);}
-    nav.primary li:last-child{border-bottom:none;padding-top:.6rem;}
-    nav.primary a{display:block;padding:.8rem 0;}
-    .nav-toggle{display:inline-flex;}
-  }
+    #gisit-gateway-prototype * { box-sizing: border-box; }
+    #gisit-gateway-prototype .gw-shell {
+      position: relative;
+      min-height: 720px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      background: var(--gw-map);
+      isolation: isolate;
+    }
+    #gisit-gateway-prototype .gw-map {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--viz-series-3) 12%, transparent), transparent 35%),
+        var(--gw-map);
+    }
+    #gisit-gateway-prototype .gw-map-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--gw-map);
+      pointer-events: auto;
+    }
+    #gisit-gateway-prototype .leaflet-container {
+      background: var(--gw-map);
+      color: var(--foreground);
+      font: inherit;
+    }
+    #gisit-gateway-prototype .leaflet-control-attribution {
+      background: var(--gw-glass);
+      color: var(--muted-foreground);
+    }
+    #gisit-gateway-prototype .leaflet-popup-content-wrapper,
+    #gisit-gateway-prototype .leaflet-popup-tip {
+      background: var(--popover);
+      color: var(--popover-foreground);
+    }
+    #gisit-gateway-prototype .gw-station-icon {
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--card);
+      color: var(--card-foreground);
+      border: 2px solid var(--viz-series-3);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--foreground) 20%, transparent);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    #gisit-gateway-prototype .gw-station-icon.gw-official-icon { border-color: var(--viz-series-1); }
+    #gisit-gateway-prototype .gw-station-cluster,
+    #gisit-gateway-prototype .gw-station {
+      cursor: pointer;
+      vector-effect: non-scaling-stroke;
+    }
+    #gisit-gateway-prototype .gw-station-halo {
+      fill: color-mix(in srgb, var(--viz-series-3) 20%, transparent);
+      stroke: var(--viz-series-3);
+      stroke-width: 1.5;
+      vector-effect: non-scaling-stroke;
+    }
+    #gisit-gateway-prototype .gw-station-dot {
+      fill: var(--viz-series-3);
+      stroke: var(--background);
+      stroke-width: 2;
+      vector-effect: non-scaling-stroke;
+    }
+    #gisit-gateway-prototype .gw-official .gw-station-dot { fill: var(--viz-series-1); }
+    #gisit-gateway-prototype .gw-station-label,
+    #gisit-gateway-prototype .gw-place-label {
+      fill: var(--foreground);
+      paint-order: stroke;
+      stroke: var(--background);
+      stroke-width: 3;
+      stroke-linejoin: round;
+      font-size: 9px;
+      font-weight: 500;
+    }
+    #gisit-gateway-prototype .gw-station-value {
+      fill: var(--foreground);
+      font-size: 8px;
+      font-weight: 500;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+    }
+    #gisit-gateway-prototype[data-stations="off"] .gw-station-layer { display: none; }
+    #gisit-gateway-prototype .gw-field-layer { display: none; }
+    #gisit-gateway-prototype[data-screen="farm"] .gw-field-layer,
+    #gisit-gateway-prototype[data-screen="decision"] .gw-field-layer { display: block; }
+    #gisit-gateway-prototype .gw-field {
+      fill: color-mix(in srgb, var(--viz-series-4) 18%, transparent);
+      stroke: var(--viz-series-4);
+      stroke-width: 2;
+      vector-effect: non-scaling-stroke;
+    }
+    #gisit-gateway-prototype .gw-field-risk {
+      fill: color-mix(in srgb, var(--viz-series-5) 22%, transparent);
+      stroke: var(--viz-series-5);
+    }
+    #gisit-gateway-prototype .gw-chrome {
+      position: relative;
+      z-index: 3;
+      min-height: 720px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+    }
+    #gisit-gateway-prototype .gw-chrome button,
+    #gisit-gateway-prototype .gw-chrome input,
+    #gisit-gateway-prototype .gw-chrome textarea,
+    #gisit-gateway-prototype .gw-chrome select { pointer-events: auto; }
+    #gisit-gateway-prototype .gw-glass {
+      background: var(--gw-glass);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+      box-shadow: 0 10px 30px color-mix(in srgb, var(--foreground) 10%, transparent);
+    }
+    #gisit-gateway-prototype .gw-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 13px;
+      border-radius: 17px;
+    }
+    #gisit-gateway-prototype .gw-brand { font-weight: 500; letter-spacing: .02em; }
+    #gisit-gateway-prototype .gw-header-right { text-align: right; }
+    #gisit-gateway-prototype .gw-map-tools {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 10px;
+      gap: 10px;
+    }
+    #gisit-gateway-prototype .gw-layer-tools,
+    #gisit-gateway-prototype .gw-zoom-tools {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      pointer-events: auto;
+    }
+    #gisit-gateway-prototype .gw-zoom-tools { flex-direction: column; align-items: flex-end; }
+    #gisit-gateway-prototype .gw-zoom-label {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--gw-glass);
+      color: var(--muted-foreground);
+      border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    }
+    #gisit-gateway-prototype .gw-spacer { flex: 1; min-height: 260px; }
+    #gisit-gateway-prototype .gw-context {
+      align-self: center;
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      text-align: center;
+      max-width: 540px;
+    }
+    #gisit-gateway-prototype .gw-panel {
+      border-radius: 21px;
+      padding: 13px;
+      pointer-events: auto;
+    }
+    #gisit-gateway-prototype .gw-weather-panel,
+    #gisit-gateway-prototype .gw-stations-panel,
+    #gisit-gateway-prototype .gw-farm-panel,
+    #gisit-gateway-prototype .gw-decision-panel { display: none; }
+    #gisit-gateway-prototype[data-screen="weather"] .gw-weather-panel,
+    #gisit-gateway-prototype[data-screen="stations"] .gw-stations-panel,
+    #gisit-gateway-prototype[data-screen="farm"] .gw-farm-panel,
+    #gisit-gateway-prototype[data-screen="decision"] .gw-decision-panel { display: block; }
+    #gisit-gateway-prototype .gw-now-row,
+    #gisit-gateway-prototype .gw-panel-head,
+    #gisit-gateway-prototype .gw-time-row,
+    #gisit-gateway-prototype .gw-station-row,
+    #gisit-gateway-prototype .gw-field-row,
+    #gisit-gateway-prototype .gw-decision-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    #gisit-gateway-prototype .gw-temp { font-size: clamp(30px, 6vw, 48px); font-weight: 400; }
+    #gisit-gateway-prototype .gw-range { width: 100%; margin: 7px 0 4px; accent-color: var(--primary); }
+    #gisit-gateway-prototype .gw-time-row { color: var(--muted-foreground); }
+    #gisit-gateway-prototype .gw-observed-line,
+    #gisit-gateway-prototype .gw-tier-line {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 9px;
+    }
+    #gisit-gateway-prototype .gw-station-list,
+    #gisit-gateway-prototype .gw-field-list { display: grid; gap: 8px; margin-top: 10px; }
+    #gisit-gateway-prototype .gw-station-row,
+    #gisit-gateway-prototype .gw-field-row {
+      padding: 8px 0;
+      border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    }
+    #gisit-gateway-prototype .gw-station-row:first-child,
+    #gisit-gateway-prototype .gw-field-row:first-child { border-top: 0; }
+    #gisit-gateway-prototype .gw-reading { text-align: right; }
+    #gisit-gateway-prototype .gw-bottom-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-top: 9px;
+      pointer-events: auto;
+    }
+    #gisit-gateway-prototype .gw-bottom-nav .btn { width: 100%; }
+    #gisit-gateway-prototype .gw-modal {
+      position: absolute;
+      z-index: 8;
+      inset: 0;
+      display: none;
+      align-items: flex-end;
+      padding: 14px;
+      background: color-mix(in srgb, var(--foreground) 22%, transparent);
+      pointer-events: auto;
+    }
+    #gisit-gateway-prototype[data-modal="observation"] .gw-modal { display: flex; }
+    #gisit-gateway-prototype .gw-sheet {
+      width: 100%;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 15px;
+      border-radius: 22px;
+      background: var(--popover);
+      color: var(--popover-foreground);
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 50px color-mix(in srgb, var(--foreground) 22%, transparent);
+    }
+    #gisit-gateway-prototype .gw-sheet-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    #gisit-gateway-prototype .gw-observation-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 8px 0 12px;
+    }
+    #gisit-gateway-prototype .gw-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    #gisit-gateway-prototype .gw-form-grid .gw-wide { grid-column: 1 / -1; }
+    #gisit-gateway-prototype .gw-auto-context {
+      margin: 10px 0;
+      padding: 9px;
+      border-radius: 12px;
+      background: var(--muted);
+      color: var(--muted-foreground);
+    }
+    #gisit-gateway-prototype .gw-sheet-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    #gisit-gateway-prototype .gw-advice {
+      margin-top: 10px;
+      padding: 11px;
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--viz-series-4) 13%, var(--card));
+      border-left: 3px solid var(--viz-series-4);
+    }
+    #gisit-gateway-prototype .gw-pro-detail {
+      display: none;
+      margin-top: 9px;
+      padding-top: 9px;
+      border-top: 1px solid var(--border);
+    }
+    #gisit-gateway-prototype[data-tier="pro"] .gw-pro-detail { display: block; }
+    #gisit-gateway-prototype .gw-source-note { margin-top: 8px; color: var(--muted-foreground); }
+    @media (max-width: 520px) {
+      #gisit-gateway-prototype .gw-shell,
+      #gisit-gateway-prototype .gw-chrome { min-height: 760px; }
+      #gisit-gateway-prototype .gw-chrome { padding: 10px; }
+      #gisit-gateway-prototype .gw-spacer { min-height: 300px; }
+      #gisit-gateway-prototype .gw-header { align-items: flex-start; }
+      #gisit-gateway-prototype .gw-form-grid { grid-template-columns: 1fr; }
+      #gisit-gateway-prototype .gw-form-grid .gw-wide { grid-column: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #gisit-gateway-prototype .gw-map-canvas { scroll-behavior: auto; }
+    }
+  </style>
 
-  /* ---------- Hero ---------- */
-  .hero{
-    background:
-      radial-gradient(1200px 400px at 80% -10%, rgba(246,128,30,.18), transparent 60%),
-      var(--bg-warm);
-    border-bottom:1px solid var(--border);
-  }
-  .hero .wrap{padding-top:3.5rem;padding-bottom:3.5rem;}
-  .hero h1{font-size:clamp(2.1rem,5vw,3.4rem);max-width:16ch;}
-  .hero .lede{font-size:clamp(1.1rem,2.3vw,1.35rem);max-width:52ch;color:var(--ink);}
-  .hero .model{
-    background:#fff;border:1px solid var(--border);border-left:5px solid var(--brand-orange);
-    border-radius:var(--radius);padding:1rem 1.25rem;margin:1.5rem 0;max-width:60ch;font-size:1.05rem;
-  }
-  .hero .model strong{color:var(--brand-brown);}
-  .cta-row{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:.5rem;}
-  .trust-inline{display:flex;flex-wrap:wrap;gap:1.2rem;align-items:center;margin-top:1.6rem;font-size:.95rem;color:var(--ink-muted);}
-  .trust-inline .chip{display:inline-flex;align-items:center;gap:.4rem;font-weight:600;}
-  .trust-inline .chip svg{flex:none;}
+  <section class="gw-shell" aria-label="GISit weather to farm intelligence prototype">
+    <div class="gw-map">
+      <div class="gw-map-canvas" id="gw-leaflet-map" role="img" aria-label="Interactive map with streets, terrain, satellite, weather radar, stations, and sample farm fields"></div>
+    </div>
 
-  /* ---------- Sections ---------- */
-  section{padding:3.25rem 0;}
-  section.warm{background:var(--bg-warm);}
-  .section-head{max-width:60ch;margin-bottom:1.8rem;}
-  .section-head p{color:var(--ink-muted);}
-  .eyebrow{font-family:var(--head);font-weight:700;text-transform:uppercase;letter-spacing:.08em;
-    font-size:.8rem;color:var(--action);margin-bottom:.4rem;}
+    <div class="gw-chrome">
+      <header class="gw-header gw-glass">
+        <div>
+          <div class="gw-brand">GISit Weather</div>
+          <div class="text-small text-muted">Melfort, Saskatchewan</div>
+        </div>
+        <div class="gw-header-right">
+          <span class="viz-badge" id="gw-plan-badge">Free</span>
+          <div class="text-small text-muted">Observed + modeled</div>
+        </div>
+      </header>
 
-  /* Programs grid */
-  .grid{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));}
-  .card{
-    background:#fff;border:1px solid var(--border);border-radius:var(--radius);
-    padding:1.4rem;display:flex;flex-direction:column;height:100%;
-  }
-  .card h3{margin-bottom:.3rem;}
-  .card p{font-size:.98rem;color:var(--ink-muted);flex:1;}
-  .badge{
-    align-self:flex-start;font-family:var(--head);font-weight:700;font-size:.72rem;
-    text-transform:uppercase;letter-spacing:.05em;padding:.25rem .6rem;border-radius:999px;margin-bottom:.7rem;
-  }
-  .badge.active{background:#e6f4ec;color:#0f5132;border:1px solid #abd5bd;}
-  .badge.internal{background:#fdeede;color:#8a4b00;border:1px solid #f1c98a;}
-  .badge.upcoming{background:#eee9e3;color:#5b4a3a;border:1px solid #d8cabb;}
-  .card .more{margin-top:1rem;font-family:var(--head);font-weight:700;font-size:.95rem;text-decoration:none;}
-  .card .more:after{content:" \2192";}
-
-  /* Impact */
-  .impact-grid{display:grid;gap:1.5rem;grid-template-columns:1.3fr 1fr;align-items:start;}
-  @media (max-width:760px){.impact-grid{grid-template-columns:1fr;}}
-  .story{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.6rem;}
-  .story .src{font-size:.82rem;color:var(--ink-muted);margin-top:.8rem;font-style:italic;}
-  .stat{background:var(--brand-brown);color:#fff;border-radius:var(--radius);padding:1.6rem;}
-  .stat h3{color:#fff;}
-  .stat .big{font-family:var(--head);font-weight:900;font-size:2.4rem;color:var(--brand-orange);line-height:1;}
-  .stat .note{font-size:.82rem;color:#e7d8c9;margin-top:.6rem;}
-  .placeholder{
-    background:repeating-linear-gradient(45deg,#fff,#fff 10px,#fdf6ef 10px,#fdf6ef 20px);
-    border:1px dashed var(--action);border-radius:8px;padding:.5rem .7rem;font-size:.85rem;
-    color:var(--action);font-weight:600;display:inline-block;
-  }
-
-  /* Get involved */
-  .involve-grid{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
-  .involve{background:#fff;border:1px solid var(--border);border-top:4px solid var(--brand-orange);
-    border-radius:var(--radius);padding:1.4rem;}
-  .involve h3{margin-bottom:.4rem;}
-  .involve p{font-size:.95rem;color:var(--ink-muted);}
-
-  /* Trust strip */
-  .trust-strip{background:var(--surface-dark);color:#fff;}
-  .trust-strip .wrap{display:flex;flex-wrap:wrap;gap:1.5rem 2.5rem;align-items:center;justify-content:space-between;padding:2rem 1.25rem;}
-  .trust-strip h2{color:#fff;font-size:1.5rem;margin:0;}
-  .trust-strip .items{display:flex;flex-wrap:wrap;gap:1.5rem;font-size:.95rem;}
-  .trust-strip .items .chip{display:inline-flex;gap:.5rem;align-items:center;color:#f0e6db;}
-
-  /* Footer */
-  footer.site{background:var(--surface-dark);color:#e7d8c9;padding:2.5rem 0 2rem;}
-  footer.site a{color:#fff;text-decoration:none;}
-  footer.site a:hover{text-decoration:underline;color:#fff;}
-  .foot-grid{display:grid;gap:1.5rem;grid-template-columns:1.4fr 1fr 1fr;}
-  @media (max-width:700px){.foot-grid{grid-template-columns:1fr;}}
-  footer .mission{max-width:40ch;font-size:.95rem;}
-  footer h4{color:#fff;font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;}
-  footer ul{list-style:none;margin:0;padding:0;}
-  footer li{margin-bottom:.4rem;font-size:.95rem;}
-  .foot-legal{border-top:1px solid #4a3526;margin-top:1.8rem;padding-top:1.2rem;font-size:.85rem;display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;justify-content:space-between;}
-
-  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
-
-  /* Staggered hero reveal (respects reduced motion) */
-  @media (prefers-reduced-motion:no-preference){
-    .reveal{opacity:0;transform:translateY(12px);animation:rise .6s ease forwards;}
-    .reveal.d1{animation-delay:.05s;}
-    .reveal.d2{animation-delay:.15s;}
-    .reveal.d3{animation-delay:.25s;}
-    .reveal.d4{animation-delay:.35s;}
-    @keyframes rise{to{opacity:1;transform:none;}}
-  }
-</style>
-</head>
-<body>
-<a class="skip" href="#main">Skip to main content</a>
-
-<!-- ===================== HEADER ===================== -->
-<header class="site">
-  <div class="wrap nav">
-    <a class="brand" href="/" aria-label="Food Aid Project home">
-      <img class="mark" src="/fap-mark.svg" width="46" height="42" alt="" aria-hidden="true">
-      <span class="name">Food Aid Project<small>A 501(c)(3) nonprofit</small></span>
-    </a>
-
-    <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-
-    <nav class="primary" id="primary-nav" aria-label="Primary">
-      <ul>
-        <li><a href="#programs">Programs</a></li>
-        <li><a href="/service-corps.html">Service Corps</a></li>
-        <li><a href="#impact">Impact</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#get-involved">Get Involved</a></li>
-        <li><a class="btn btn-primary" href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate</a></li>
-      </ul>
-    </nav>
-  </div>
-</header>
-
-<main id="main">
-
-  <!-- ===================== HERO ===================== -->
-  <section class="hero" aria-labelledby="hero-h">
-    <div class="wrap">
-      <p class="eyebrow reveal d1">Food &amp; economic security</p>
-      <h1 id="hero-h" class="reveal d1">We move bulk food cheaper and faster to people who need it.</h1>
-      <p class="lede reveal d2">Food Aid Project is a 501(c)(3) nonprofit that makes the bulk food supply chain more
-        efficient — so more food reaches more people, for less, both abroad and across the United States.</p>
-
-      <p class="model reveal d3"><strong>The model, in one sentence:</strong> we partner directly with
-        farmer/processors for direct pricing, then move that food efficiently — no middleman, no bureaucracy —
-        to deliver bulk staple food at the lowest possible cost, and put the savings into more meals for people in need.</p>
-
-      <div class="cta-row reveal d3">
-        <a class="btn btn-primary" href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate</a>
-        <a class="btn btn-secondary" href="#get-involved">Partner with us</a>
+      <div class="gw-map-tools">
+        <div class="gw-layer-tools" aria-label="Map layers">
+          <button type="button" class="btn btn-primary" id="gw-radar-toggle" aria-pressed="true">Radar</button>
+          <button type="button" class="btn btn-primary" id="gw-stations-toggle" aria-pressed="true">Stations</button>
+          <label class="form-label" for="gw-overlay">Weather
+            <select class="form-control" id="gw-overlay">
+              <option value="radar">Radar</option>
+              <option value="clouds">Satellite clouds</option>
+              <option value="wind">Wind and gusts</option>
+              <option value="rain-total">Rain total</option>
+              <option value="temperature">Temperature</option>
+            </select>
+          </label>
+          <label class="form-label" for="gw-basemap">Base
+            <select class="form-control" id="gw-basemap">
+              <option value="streets">Streets</option>
+              <option value="terrain">Terrain</option>
+              <option value="satellite">Satellite</option>
+            </select>
+          </label>
+        </div>
+        <div class="gw-zoom-tools" aria-label="Map zoom">
+          <div class="viz-row">
+            <button type="button" class="btn" id="gw-zoom-in" aria-label="Zoom in">+</button>
+            <button type="button" class="btn" id="gw-zoom-out" aria-label="Zoom out">−</button>
+          </div>
+          <span class="gw-zoom-label text-small" id="gw-zoom-label">Local</span>
+        </div>
       </div>
 
-      <div class="trust-inline reveal d4">
-        <span class="chip">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-          501(c)(3) nonprofit
-        </span>
-        <span class="chip">EIN&nbsp;27-3474278</span>
-        <span class="chip">Fort Collins, Colorado · est. 2010</span>
-      </div>
+      <div class="gw-spacer"></div>
+      <div class="gw-context text-small" id="gw-context">Rain reaches Melfort around 4:00 PM</div>
+
+      <section class="gw-panel gw-glass gw-weather-panel" aria-label="Weather timeline">
+        <div class="gw-now-row">
+          <div>
+            <div class="gw-temp" id="gw-temp">21°</div>
+            <div id="gw-condition">Rain approaching</div>
+          </div>
+          <button type="button" class="btn" id="gw-play" aria-pressed="false">Play</button>
+        </div>
+        <input class="form-range gw-range" id="gw-time-slider" type="range" min="0" max="12" step="0.01" value="4" aria-label="Weather time">
+        <div class="gw-time-row text-small"><span>10 AM</span><strong id="gw-time">Today · 2:00 PM</strong><span>10 PM</span></div>
+        <div class="gw-observed-line">
+          <span class="viz-badge">Radar</span><span class="viz-badge">4 nearby stations</span><span class="viz-badge">12 mm expected</span>
+        </div>
+      </section>
+
+      <section class="gw-panel gw-glass gw-stations-panel" aria-label="Nearby weather stations">
+        <div class="gw-panel-head">
+          <div><strong>Nearby observations</strong><div class="text-small text-muted">Official + personal stations</div></div>
+          <span class="viz-badge">4 current</span>
+        </div>
+        <div class="gw-station-list">
+          <button type="button" class="btn gw-station-row" data-open-station="Melfort North PWS">
+            <span><strong>Melfort North</strong><br><span class="text-small text-muted">Personal · 2 min ago · Quality checked</span></span>
+            <span class="gw-reading"><strong>21°</strong><br><span class="text-small text-muted">Wind 18 km/h</span></span>
+          </button>
+          <button type="button" class="btn gw-station-row" data-open-station="Saskatoon Airport">
+            <span><strong>Saskatoon Airport</strong><br><span class="text-small text-muted">Official · 8 min ago</span></span>
+            <span class="gw-reading"><strong>22°</strong><br><span class="text-small text-muted">Rain 0.4 mm</span></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="gw-panel gw-glass gw-farm-panel" aria-label="Farm intelligence">
+        <div class="gw-panel-head">
+          <div><strong>Naber Family Farm</strong><div class="text-small text-muted">2 fields · Peas at flowering</div></div>
+          <button type="button" class="btn btn-primary" id="gw-add-observation">Add observation</button>
+        </div>
+        <div class="gw-field-list">
+          <div class="gw-field-row">
+            <span><strong>North Quarter</strong><br><span class="text-small text-muted">Peas · Flowering</span></span>
+            <span class="viz-badge">Rain beneficial</span>
+          </div>
+          <div class="gw-field-row">
+            <span><strong>Creek Field</strong><br><span class="text-small text-muted">Canola · Rosette</span></span>
+            <span class="viz-badge">Scout tomorrow</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="gw-panel gw-glass gw-decision-panel" aria-label="Decision support">
+        <div class="gw-decision-head">
+          <div><strong>What this means for North Quarter</strong><div class="text-small text-muted">Observation + field weather context</div></div>
+          <span class="viz-badge">Flowering peas</span>
+        </div>
+        <div class="gw-tier-line" aria-label="Preview decision support tier">
+          <button type="button" class="btn gw-tier" data-tier="free" aria-pressed="true">Free</button>
+          <button type="button" class="btn gw-tier" data-tier="field" aria-pressed="false">Field</button>
+          <button type="button" class="btn gw-tier" data-tier="pro" aria-pressed="false">Pro</button>
+        </div>
+        <div class="gw-advice">
+          <strong id="gw-advice-title">Rain is likely beneficial</strong>
+          <div class="text-small" id="gw-advice-copy">Your flowering peas appear healthy. Approximately 12 mm is expected by tonight.</div>
+          <div class="gw-pro-detail text-small"><strong>Pro:</strong> Fungicide timing risk rises Thursday morning as leaf wetness exceeds the modeled threshold. Scout the north edge first.</div>
+        </div>
+        <div class="gw-source-note text-small">Based on your observation, nearby stations, radar, forecast, crop stage, and field location.</div>
+      </section>
+
+      <nav class="gw-bottom-nav" aria-label="Primary app navigation">
+        <button type="button" class="btn btn-primary gw-nav" data-screen="weather" aria-pressed="true">Weather</button>
+        <button type="button" class="btn gw-nav" data-screen="stations" aria-pressed="false">Stations</button>
+        <button type="button" class="btn gw-nav" data-screen="farm" aria-pressed="false">Farm Intelligence</button>
+      </nav>
+    </div>
+
+    <div class="gw-modal" aria-hidden="true">
+      <form class="gw-sheet" id="gw-observation-form">
+        <div class="gw-sheet-head">
+          <div><strong>Add field observation</strong><div class="text-small text-muted">North Quarter · current location</div></div>
+          <button type="button" class="btn btn-ghost" id="gw-close-observation">Close</button>
+        </div>
+        <label class="form-label" for="gw-observation-type">What are you seeing?</label>
+        <select class="form-control" id="gw-observation-type">
+          <option>Crop stage</option>
+          <option>Moisture</option>
+          <option>Disease</option>
+          <option>Insects</option>
+          <option>Weather damage</option>
+        </select>
+        <div class="gw-form-grid">
+          <label class="form-label">Crop stage
+            <select class="form-control" id="gw-crop-stage"><option>Flowering</option><option>Pod set</option><option>Vegetative</option></select>
+          </label>
+          <label class="form-label">Condition
+            <select class="form-control" id="gw-condition-input"><option>Healthy</option><option>Watch</option><option>Concern</option></select>
+          </label>
+          <label class="form-label gw-wide">Notes
+            <textarea class="form-control" id="gw-notes" rows="2" placeholder="Optional field notes"></textarea>
+          </label>
+        </div>
+        <div class="gw-auto-context text-small">Automatically attached: field, GPS location, time, radar, 4 nearby station readings, forecast, and crop stage.</div>
+        <div class="gw-sheet-actions">
+          <button type="button" class="btn">Add photo</button>
+          <button type="submit" class="btn btn-primary">Save and analyze</button>
+        </div>
+      </form>
     </div>
   </section>
 
-  <!-- ===================== PROGRAMS ===================== -->
-  <section id="programs" aria-labelledby="programs-h">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">What we do</p>
-        <h2 id="programs-h">Concrete programs, real beneficiaries</h2>
-        <p>Our work spans agriculture, logistics, technology, and human capability. Here's where it lands — each program with its honest status.</p>
-      </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function () {
+      const root = document.getElementById("gisit-gateway-prototype");
+      const slider = document.getElementById("gw-time-slider");
+      const playButton = document.getElementById("gw-play");
+      const weatherFrames = [
+        { temp: 18, condition: "Bright · clouds building", longitude: -109.2, opacity: .35 },
+        { temp: 19, condition: "Partly cloudy", longitude: -108.7, opacity: .43 },
+        { temp: 20, condition: "Clouds increasing", longitude: -108.2, opacity: .52 },
+        { temp: 21, condition: "Rain west of Melfort", longitude: -107.7, opacity: .63 },
+        { temp: 21, condition: "Rain approaching", longitude: -107.1, opacity: .74 },
+        { temp: 20, condition: "Showers nearby", longitude: -106.5, opacity: .86 },
+        { temp: 18, condition: "Rain beginning", longitude: -105.9, opacity: 1 },
+        { temp: 17, condition: "Steady rain", longitude: -105.2, opacity: 1 },
+        { temp: 16, condition: "Rain · locally heavy", longitude: -104.5, opacity: .93 },
+        { temp: 16, condition: "Rain easing", longitude: -103.8, opacity: .79 },
+        { temp: 15, condition: "Scattered showers", longitude: -103.1, opacity: .62 },
+        { temp: 14, condition: "Cloudy", longitude: -102.4, opacity: .46 },
+        { temp: 13, condition: "Mostly cloudy", longitude: -101.7, opacity: .33 }
+      ];
+      let animationFrame = null;
+      let previousTime = null;
+      let currentBase = null;
 
-      <div class="grid">
-        <article class="card">
-          <span class="badge active">Active</span>
-          <h3>International Food Distribution</h3>
-          <p>Through our Zèl Zanj (“Angel Wings”) program, a sourcing partner contracts directly with
-             farmers to reclean their split beans, which we ship in 50&nbsp;kg bags through NGO partners to
-             families across the Caribbean and Central America — supporting farmers and food security alike.</p>
-          <a class="more" href="/zel-zanj.html">See how Zèl Zanj works</a>
-        </article>
-
-        <article class="card">
-          <span class="badge active">Active</span>
-          <h3>Food Bank Supply</h3>
-          <p>We supply packaged staples — beans, lentils, peas, oatmeal, rice, and cereal — to food banks
-             across the US and Canada, who can build a custom truckload online.</p>
-          <a class="more" href="/food-banks.html">Build a truckload</a>
-        </article>
-
-        <article class="card">
-          <span class="badge internal">Internal tool</span>
-          <h3>Decision-Support Engine</h3>
-          <p>Our in-house pricing and sourcing engine is what makes the food programs cost-effective —
-             working from direct farmer/processor pricing and freight to find the lowest delivered cost.</p>
-          <a class="more">How the engine helps</a>
-        </article>
-
-        <article class="card">
-          <span class="badge upcoming">Upcoming</span>
-          <h3>GIS Crop-Yield Prediction</h3>
-          <p>A forthcoming tool to predict crop yields in near real time — fusing weather, satellite
-             imagery, and crop growth models — built with a leading GIS partner.
-             <span class="placeholder">[GIS partner name — pending permission]</span></p>
-          <a class="more" href="/programs/gis">Read about the GIS work</a>
-        </article>
-
-        <article class="card">
-          <span class="badge upcoming">Interest network open</span>
-          <h3>Skills for Food Security Service Corps</h3>
-          <p>An individualized approach to volunteer and community service built around a foundational principle: the hours are yours. Tell us what you know, what you care about, and what you already love to do.</p>
-          <a class="more" href="/service-corps.html">Complete the interest questionnaire</a>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== IMPACT ===================== -->
-  <section id="impact" class="warm" aria-labelledby="impact-h">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">The proof</p>
-        <h2 id="impact-h">Efficiency you can see in the meals</h2>
-        <p>We don't lead with adjectives. Here's a concrete example and the economics behind the model.</p>
-      </div>
-
-      <div class="impact-grid">
-        <div class="story">
-          <h3>The pinto-bean savings, Alabama</h3>
-          <p>By buying and shipping smart, a single food-aid order delivered roughly
-             <strong>200,000 portions of pinto beans for about $6,000</strong> — food that would
-             have cost far more through conventional channels. Same beans, more meals, because the
-             supply chain was the thing we fixed.</p>
-          <p class="src">Source: Food Aid Project program records. <span class="placeholder">[Date &amp; exact figures — verify before publish]</span></p>
-        </div>
-
-        <div class="stat">
-          <h3>Why split beans go further</h3>
-          <p class="big">~10 portions</p>
-          <p>per pound of beans — and a single 20-ft container carries enough for hundreds of thousands of portions.</p>
-          <p class="note">Capacity figure from program materials, stated as capacity — not a claim of meals already delivered. <span class="placeholder" style="color:#ffd9b3;border-color:#ffd9b3;">[Verify &amp; date]</span></p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== ABOUT (short) ===================== -->
-  <section id="about" aria-labelledby="about-h">
-    <div class="wrap">
-      <div class="section-head" style="max-width:64ch;">
-        <p class="eyebrow">Who we are</p>
-        <h2 id="about-h">Not a bake-sale charity</h2>
-        <p>Food Aid Project operates at a professional level in bulk agriculture, logistics, and
-           technology. Our mission is to advance food and economic security by improving access to,
-           and efficiency within, the bulk food procurement and distribution network — relieving need,
-           reducing burdens on government, and creating opportunity in underserved areas.</p>
-        <p><a href="/about">More about our mission, model, and leadership</a> ·
-           <a href="/trust.html">Trust &amp; transparency</a></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== GET INVOLVED ===================== -->
-  <section id="get-involved" class="warm" aria-labelledby="involve-h">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">Take the next step</p>
-        <h2 id="involve-h">Ways to move food forward</h2>
-      </div>
-
-      <div class="involve-grid">
-        <div class="involve">
-          <h3>Donate</h3>
-          <p>Your gift converts directly into delivered meals. Give once, monthly, or yearly — 100% tax-deductible.</p>
-          <p><a class="btn btn-primary" href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate via Every.org</a></p>
-        </div>
-        <div class="involve">
-          <h3>Partner</h3>
-          <p>NGOs, agriculture and freight businesses, and public-sector agencies — let's move food together.</p>
-          <p><a href="/contact">Start a conversation →</a></p>
-        </div>
-        <div class="involve">
-          <h3>Volunteer or serve</h3>
-          <p>Tell us what you know, what you do well, and what you already love to do. We explore individualized volunteer and eligible community-service opportunities.</p>
-          <p><a href="/service-corps.html">Complete the interest questionnaire →</a></p>
-        </div>
-        <div class="involve">
-          <h3>Stay informed</h3>
-          <p>Get occasional updates on our programs and impact.</p>
-          <p><a href="/get-involved#subscribe">Subscribe →</a></p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== TRUST STRIP ===================== -->
-  <section class="trust-strip" aria-labelledby="trust-h">
-    <div class="wrap">
-      <h2 id="trust-h">Real, registered, accountable.</h2>
-      <div class="items">
-        <span class="chip">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-          IRS 501(c)(3)
-        </span>
-        <span class="chip">EIN&nbsp;27-3474278</span>
-        <span class="chip">Founded 2010 · Fort Collins, CO</span>
-        <span class="chip"><span class="placeholder" style="background:none;border-color:var(--brand-orange);color:var(--brand-orange);">[Candid/GuideStar seal — TBD]</span></span>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<!-- ===================== FOOTER ===================== -->
-<footer class="site">
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <span class="brand" style="margin-bottom:.6rem;">
-          <img class="mark" src="/fap-mark-ondark.svg" width="40" height="36" alt="" aria-hidden="true">
-          <span class="name" style="color:#fff;">Food Aid Project</span>
-        </span>
-        <p class="mission">Advancing food and economic security by improving access to, and efficiency within, the bulk food procurement and distribution network.</p>
-      </div>
-
-      <div>
-        <h4>Programs</h4>
-        <ul>
-          <li><a href="/zel-zanj.html">International Food Distribution</a></li>
-          <li><a href="/food-banks.html">Food Bank Supply</a></li>
-          <li><a href="/programs/software">Decision-Support Engine</a></li>
-          <li><a href="/programs/gis">GIS Crop-Yield Prediction</a></li>
-          <li><a href="/service-corps.html">Skills for Food Security Service Corps</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h4>Organization</h4>
-        <ul>
-          <li><a href="/about">About</a></li>
-          <li><a href="/trust.html">Trust &amp; Transparency</a></li>
-          <li><a href="/contact">Contact</a></li>
-          <li><a href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="foot-legal">
-      <span>Food Aid Project, Inc. · 501(c)(3) nonprofit · EIN&nbsp;27-3474278 · Fort Collins, Colorado</span>
-      <span><a href="/privacy.html">Privacy</a> · <a href="mailto:info@foodaidproject.org">info@foodaidproject.org</a></span>
-    </div>
-  </div>
-</footer>
-
-<script>
-  // Accessible mobile nav toggle
-  (function(){
-    var btn = document.querySelector('.nav-toggle');
-    var nav = document.getElementById('primary-nav');
-    btn.addEventListener('click', function(){
-      var open = nav.classList.toggle('open');
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    });
-    // Close menu when a link is tapped (mobile)
-    nav.addEventListener('click', function(e){
-      if(e.target.tagName === 'A' && nav.classList.contains('open')){
-        nav.classList.remove('open');
-        btn.setAttribute('aria-expanded','false');
-        btn.setAttribute('aria-label','Open menu');
+      if (typeof window.L === "undefined") {
+        document.getElementById("gw-leaflet-map").textContent = "The live map could not load.";
+        return;
       }
-    });
-  })();
-</script>
-</body>
-</html>
+
+      const map = window.L.map("gw-leaflet-map", {
+        center: [52.86084, -104.614296],
+        zoom: 7,
+        zoomControl: false,
+        attributionControl: true,
+        zoomSnap: .25,
+        zoomDelta: .25,
+        wheelPxPerZoomLevel: 150,
+        wheelDebounceTime: 25,
+        preferCanvas: true
+      });
+      const bases = {
+        streets: window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "© OpenStreetMap contributors"
+        }),
+        terrain: window.L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+          maxZoom: 17,
+          attribution: "© OpenStreetMap contributors · SRTM"
+        }),
+        satellite: window.L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+          maxZoom: 19,
+          attribution: "Esri World Imagery"
+        })
+      };
+      currentBase = bases.streets.addTo(map);
+
+      const style = window.getComputedStyle(root);
+      const colors = {
+        rain: style.getPropertyValue("--viz-series-3").trim() || "currentColor",
+        moderate: style.getPropertyValue("--viz-series-4").trim() || "currentColor",
+        heavy: style.getPropertyValue("--viz-series-5").trim() || "currentColor",
+        wind: style.getPropertyValue("--viz-series-2").trim() || "currentColor",
+        temperature: style.getPropertyValue("--viz-series-6").trim() || "currentColor",
+        field: style.getPropertyValue("--viz-series-4").trim() || "currentColor",
+        risk: style.getPropertyValue("--viz-series-5").trim() || "currentColor"
+      };
+      const radarParts = [
+        window.L.circle([52.7, -107.1], { radius: 145000, stroke: false, fillColor: colors.rain, fillOpacity: .17 }),
+        window.L.circle([52.7, -107.1], { radius: 92000, stroke: false, fillColor: colors.moderate, fillOpacity: .25 }),
+        window.L.circle([52.7, -107.1], { radius: 43000, stroke: false, fillColor: colors.heavy, fillOpacity: .36 })
+      ];
+      const radarLayer = window.L.layerGroup(radarParts).addTo(map);
+
+      const stationData = [
+        { name: "Melfort North PWS", lat: 52.905, lon: -104.72, value: "21°", type: "Personal", age: "2 min", qc: "Quality checked", wind: "18 km/h" },
+        { name: "Kinistino Farm PWS", lat: 52.955, lon: -105.08, value: "20°", type: "Personal", age: "4 min", qc: "Quality checked", wind: "16 km/h" },
+        { name: "Saskatoon Airport", lat: 52.170, lon: -106.70, value: "22°", type: "Official", age: "8 min", qc: "Official observation", wind: "20 km/h" },
+        { name: "Regina Airport", lat: 50.432, lon: -104.666, value: "24°", type: "Official", age: "7 min", qc: "Official observation", wind: "23 km/h" }
+      ];
+      const stationMarkers = stationData.map(function (station) {
+        const icon = window.L.divIcon({
+          className: "",
+          html: '<div class="gw-station-icon ' + (station.type === "Official" ? "gw-official-icon" : "") + '">' + station.value + "</div>",
+          iconSize: [34, 34],
+          iconAnchor: [17, 17]
+        });
+        const marker = window.L.marker([station.lat, station.lon], { icon: icon });
+        marker.bindPopup("<strong>" + station.name + "</strong><br>" + station.type + " · " + station.age + " ago<br>" + station.qc + "<br>Wind " + station.wind);
+        marker.on("click", function () { openStation(station.name); });
+        return marker;
+      });
+      const stationLayer = window.L.layerGroup(stationMarkers).addTo(map);
+
+      const fieldLayer = window.L.layerGroup([
+        window.L.polygon([[52.905, -104.735], [52.906, -104.697], [52.888, -104.694], [52.887, -104.733]], {
+          color: colors.field,
+          weight: 2,
+          fillColor: colors.field,
+          fillOpacity: .18
+        }).bindTooltip("North Quarter · Peas · Flowering"),
+        window.L.polygon([[52.882, -104.731], [52.883, -104.694], [52.866, -104.690], [52.865, -104.729]], {
+          color: colors.risk,
+          weight: 2,
+          fillColor: colors.risk,
+          fillOpacity: .22
+        }).bindTooltip("Creek Field · Canola · Scout tomorrow")
+      ]);
+
+      function interpolate(a, b, amount) { return a + (b - a) * amount; }
+      function timeLabel(position) {
+        const minutesTotal = 600 + Math.round(position * 60);
+        const hours24 = Math.floor(minutesTotal / 60) % 24;
+        const minutes = minutesTotal % 60;
+        const suffix = hours24 >= 12 ? "PM" : "AM";
+        const hours = hours24 % 12 || 12;
+        return "Today · " + hours + ":" + String(minutes).padStart(2, "0") + " " + suffix;
+      }
+      function renderWeather() {
+        const position = Number(slider.value);
+        const lowIndex = Math.floor(position);
+        const highIndex = Math.min(weatherFrames.length - 1, Math.ceil(position));
+        const amount = position - lowIndex;
+        const low = weatherFrames[lowIndex];
+        const high = weatherFrames[highIndex];
+        document.getElementById("gw-temp").textContent = Math.round(interpolate(low.temp, high.temp, amount)) + "°";
+        document.getElementById("gw-condition").textContent = weatherFrames[Math.round(position)].condition;
+        document.getElementById("gw-time").textContent = timeLabel(position);
+        const longitude = interpolate(low.longitude, high.longitude, amount);
+        const opacity = interpolate(low.opacity, high.opacity, amount);
+        const offsets = [-.45, 0, .34];
+        radarParts.forEach(function (part, index) {
+          part.setLatLng([52.7, longitude + offsets[index]]);
+          part.setStyle({ fillOpacity: opacity * [.17, .25, .36][index] });
+        });
+      }
+      function stopAnimation() {
+        if (animationFrame) window.cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+        previousTime = null;
+        playButton.textContent = "Play";
+        playButton.setAttribute("aria-pressed", "false");
+      }
+      function animate(timestamp) {
+        if (!previousTime) previousTime = timestamp;
+        const elapsed = Math.min(.1, (timestamp - previousTime) / 1000);
+        previousTime = timestamp;
+        let next = Number(slider.value) + elapsed * .82;
+        if (next > Number(slider.max)) next = Number(slider.min);
+        slider.value = next.toFixed(2);
+        renderWeather();
+        animationFrame = window.requestAnimationFrame(animate);
+      }
+      function updateZoomLabel() {
+        const zoom = map.getZoom();
+        let label = "Global";
+        if (zoom >= 12) label = "Field";
+        else if (zoom >= 9) label = "Local";
+        else if (zoom >= 6) label = "Regional";
+        else if (zoom >= 3) label = "Continental";
+        document.getElementById("gw-zoom-label").textContent = label + " · " + zoom.toFixed(1);
+      }
+      function setScreen(screen) {
+        root.dataset.screen = screen;
+        root.querySelectorAll(".gw-nav").forEach(function (button) {
+          const selected = button.dataset.screen === screen || (screen === "decision" && button.dataset.screen === "farm");
+          button.classList.toggle("btn-primary", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+        const messages = {
+          weather: "Rain reaches Melfort around 4:00 PM",
+          stations: "Personal stations fill the gaps between official observations",
+          farm: "Weather becomes field-specific when Farm Intelligence is opened",
+          decision: "Your observation has been combined with field weather context"
+        };
+        document.getElementById("gw-context").textContent = messages[screen];
+        const farmActive = screen === "farm" || screen === "decision";
+        if (farmActive && !map.hasLayer(fieldLayer)) fieldLayer.addTo(map);
+        if (!farmActive && map.hasLayer(fieldLayer)) map.removeLayer(fieldLayer);
+        if (farmActive && map.getZoom() < 10) map.flyTo([52.887, -104.713], 11, { duration: 1.2 });
+      }
+      function toggleLayer(name) {
+        const key = name === "radar" ? "radar" : "stations";
+        const button = document.getElementById("gw-" + key + "-toggle");
+        const layer = key === "radar" ? radarLayer : stationLayer;
+        const enabled = map.hasLayer(layer);
+        if (enabled) map.removeLayer(layer); else layer.addTo(map);
+        button.classList.toggle("btn-primary", !enabled);
+        button.setAttribute("aria-pressed", String(!enabled));
+      }
+      function openStation(name) {
+        setScreen("stations");
+        document.getElementById("gw-context").textContent = name + " · current and quality checked";
+      }
+      function setTier(tier) {
+        root.dataset.tier = tier;
+        root.querySelectorAll(".gw-tier").forEach(function (button) {
+          const selected = button.dataset.tier === tier;
+          button.classList.toggle("btn-primary", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+        const copy = {
+          free: ["Rain is likely beneficial", "Your flowering peas appear healthy. Approximately 12 mm is expected by tonight."],
+          field: ["Scout after the rain", "Rain is beneficial now, but check low areas tomorrow for standing water and early disease symptoms."],
+          pro: ["Protect the flowering window", "Rain is beneficial. Modeled leaf wetness raises disease pressure Thursday morning; prioritize the north edge when scouting."]
+        };
+        document.getElementById("gw-advice-title").textContent = copy[tier][0];
+        document.getElementById("gw-advice-copy").textContent = copy[tier][1];
+        document.getElementById("gw-plan-badge").textContent = tier === "free" ? "Free" : tier === "field" ? "Field" : "Pro";
+      }
+
+      slider.addEventListener("input", function () { stopAnimation(); renderWeather(); });
+      playButton.addEventListener("click", function () {
+        if (animationFrame) { stopAnimation(); return; }
+        playButton.textContent = "Pause";
+        playButton.setAttribute("aria-pressed", "true");
+        animationFrame = window.requestAnimationFrame(animate);
+      });
+      document.getElementById("gw-zoom-in").addEventListener("click", function () {
+        map.setZoom(map.getZoom() + .5, { animate: true });
+      });
+      document.getElementById("gw-zoom-out").addEventListener("click", function () {
+        map.setZoom(map.getZoom() - .5, { animate: true });
+      });
+      document.getElementById("gw-radar-toggle").addEventListener("click", function () { toggleLayer("radar"); });
+      document.getElementById("gw-stations-toggle").addEventListener("click", function () { toggleLayer("stations"); });
+      document.getElementById("gw-basemap").addEventListener("change", function (event) {
+        map.removeLayer(currentBase);
+        currentBase = bases[event.target.value];
+        currentBase.addTo(map);
+      });
+      document.getElementById("gw-overlay").addEventListener("change", function (event) {
+        const presets = {
+          radar: { colors: [colors.rain, colors.moderate, colors.heavy], message: "Radar · observed precipitation moving toward Melfort" },
+          clouds: { colors: [colors.wind, colors.rain, colors.moderate], message: "Satellite clouds · observed coverage and movement" },
+          wind: { colors: [colors.wind, colors.wind, colors.temperature], message: "Wind and gusts · strongest west of Melfort" },
+          "rain-total": { colors: [colors.rain, colors.moderate, colors.heavy], message: "Forecast rain total · approximately 12 mm by tonight" },
+          temperature: { colors: [colors.moderate, colors.temperature, colors.heavy], message: "Temperature · cooler air arriving with the rain band" }
+        };
+        const preset = presets[event.target.value];
+        radarParts.forEach(function (part, index) { part.setStyle({ fillColor: preset.colors[index] }); });
+        document.getElementById("gw-context").textContent = preset.message;
+      });
+      root.querySelectorAll(".gw-nav").forEach(function (button) {
+        button.addEventListener("click", function () { setScreen(button.dataset.screen); });
+      });
+      root.querySelectorAll("[data-open-station]").forEach(function (button) {
+        button.addEventListener("click", function () { openStation(button.dataset.openStation); });
+      });
+      document.getElementById("gw-add-observation").addEventListener("click", function () {
+        root.dataset.modal = "observation";
+        root.querySelector(".gw-modal").setAttribute("aria-hidden", "false");
+      });
+      document.getElementById("gw-close-observation").addEventListener("click", function () {
+        root.dataset.modal = "";
+        root.querySelector(".gw-modal").setAttribute("aria-hidden", "true");
+      });
+      document.getElementById("gw-observation-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+        root.dataset.modal = "";
+        root.querySelector(".gw-modal").setAttribute("aria-hidden", "true");
+        setScreen("decision");
+        setTier("free");
+      });
+      root.querySelectorAll(".gw-tier").forEach(function (button) {
+        button.addEventListener("click", function () { setTier(button.dataset.tier); });
+      });
+
+      root.dataset.screen = "weather";
+      root.dataset.tier = "free";
+      map.on("zoomend", updateZoomLabel);
+      updateZoomLabel();
+      renderWeather();
+      window.setTimeout(function () { map.invalidateSize(); }, 100);
+    }());
+  </script>
+</div>

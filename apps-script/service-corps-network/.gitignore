@@ -1,7 +1,0 @@
-# Never commit Apps Script deployment state, local clasp files, credentials, or exports.
-.clasp.json
-.claspignore
-*.local.json
-*.credentials.json
-exports/
-respondent-data/
