@@ -1,3 +1,695 @@
+<!doctype html>
+<html lang="en" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Gisit Weather Experience</title>
+<style>:root {
+  color-scheme: light dark;
+  background-color: transparent !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --main-surface-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: light-dark(rgb(26 28 31), rgb(255 255 255));
+  --card: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --card-foreground: var(--foreground);
+  --popover: light-dark(rgb(255 255 255), rgb(45 45 45));
+  --popover-foreground: var(--foreground);
+  --primary: light-dark(rgb(51 156 255), rgb(131 195 255));
+  --primary-foreground: light-dark(rgb(255 255 255), rgb(13 13 13));
+  --secondary: light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%));
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: light-dark(
+    rgb(26 28 31 / 49.4%),
+    rgb(255 255 255 / 49.8%)
+  );
+  --accent: light-dark(rgb(229 242 255), rgb(13 39 63));
+  --accent-foreground: var(--primary);
+  --destructive: light-dark(rgb(226 85 7), rgb(255 133 73));
+  --border: light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%));
+  --input: light-dark(
+    rgb(26 28 31 / 11.8%),
+    color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+  );
+  --ring: light-dark(rgb(51 156 255), rgb(131 195 255 / 76%));
+  --font-size-base: 14px;
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: 10px;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 17'%3E%3Cpath d='M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z'/%3E%3C/svg%3E");
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+  --color-background-primary: var(--background);
+  --color-text-primary: var(--foreground);
+  --color-border-secondary: var(--border);
+}
+
+:root[data-visualize-standalone] {
+  background-color: var(--background) !important;
+}
+
+/* Generic mobile code-block hosts provide light/dark mode but no series palette.
+   AppBlock hosts set all six variables themselves. */
+:root:not([data-app-block-surface]) {
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(#f3883b, #f59a56);
+  --viz-series-3: light-dark(#5dc977, #74d58b);
+  --viz-series-4: light-dark(#eb77b1, #f08fc0);
+  --viz-series-5: light-dark(#9b79ec, #aa91ef);
+  --viz-series-6: light-dark(#3ab9b1, #5acbc2);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html > body {
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+:root:not([data-app-block-surface]) > body {
+  padding: 12px;
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--viz-font-weight-medium);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget > :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-legend,
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls > .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls > .form-label > :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type="checkbox"]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: "";
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type="radio"]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: "";
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed="true"],
+    [aria-selected="true"],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed="true"], [aria-selected="true"], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget > svg {
+  width: 100%;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+</style>
+</head>
+<body>
 <div id="gisit-gateway-prototype">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
@@ -292,12 +984,30 @@
     }
     #gisit-gateway-prototype[data-tier="pro"] .gw-pro-detail { display: block; }
     #gisit-gateway-prototype .gw-source-note { margin-top: 8px; color: var(--muted-foreground); }
+    @media (max-width: 900px) {
+      #gisit-gateway-prototype .gw-map-tools { align-items: stretch; }
+      #gisit-gateway-prototype .gw-layer-tools { max-width: calc(100% - 64px); }
+      #gisit-gateway-prototype .gw-layer-tools .form-label { min-width: 132px; flex: 1; }
+      #gisit-gateway-prototype .gw-layer-tools .form-control { width: 100%; }
+      #gisit-gateway-prototype .gw-bottom-nav .btn { white-space: normal; min-height: 42px; }
+    }
     @media (max-width: 520px) {
       #gisit-gateway-prototype .gw-shell,
-      #gisit-gateway-prototype .gw-chrome { min-height: 760px; }
+      #gisit-gateway-prototype .gw-chrome { min-height: 100dvh; }
       #gisit-gateway-prototype .gw-chrome { padding: 10px; }
-      #gisit-gateway-prototype .gw-spacer { min-height: 300px; }
+      #gisit-gateway-prototype .gw-spacer { min-height: 250px; }
       #gisit-gateway-prototype .gw-header { align-items: flex-start; }
+      #gisit-gateway-prototype .gw-map-tools { display: grid; grid-template-columns: 1fr auto; }
+      #gisit-gateway-prototype .gw-layer-tools { max-width: none; display: grid; grid-template-columns: 1fr 1fr; }
+      #gisit-gateway-prototype .gw-layer-tools > .btn { min-height: 38px; }
+      #gisit-gateway-prototype .gw-layer-tools .form-label { min-width: 0; }
+      #gisit-gateway-prototype .gw-zoom-tools { grid-column: 2; grid-row: 1; }
+      #gisit-gateway-prototype .gw-weather-panel,
+      #gisit-gateway-prototype .gw-stations-panel,
+      #gisit-gateway-prototype .gw-farm-panel,
+      #gisit-gateway-prototype .gw-decision-panel { max-height: 38dvh; overflow-y: auto; }
+      #gisit-gateway-prototype .gw-bottom-nav { position: sticky; bottom: 0; z-index: 6; }
+      #gisit-gateway-prototype .gw-bottom-nav .btn { padding-inline: 6px; font-size: 12px; }
       #gisit-gateway-prototype .gw-form-grid { grid-template-columns: 1fr; }
       #gisit-gateway-prototype .gw-form-grid .gw-wide { grid-column: auto; }
     }
@@ -315,11 +1025,11 @@
       <header class="gw-header gw-glass">
         <div>
           <div class="gw-brand">GISit Weather</div>
-          <div class="text-small text-muted">Melfort, Saskatchewan</div>
+          <div class="text-small text-muted" id="gw-location-label">Melfort, Saskatchewan</div>
         </div>
         <div class="gw-header-right">
           <span class="viz-badge" id="gw-plan-badge">Free</span>
-          <div class="text-small text-muted">Observed + modeled</div>
+          <div class="text-small text-muted" id="gw-data-status">Connecting to live weather…</div>
         </div>
       </header>
 
@@ -354,37 +1064,32 @@
       </div>
 
       <div class="gw-spacer"></div>
-      <div class="gw-context text-small" id="gw-context">Rain reaches Melfort around 4:00 PM</div>
+      <div class="gw-context text-small" id="gw-context">Loading live radar and forecast…</div>
 
       <section class="gw-panel gw-glass gw-weather-panel" aria-label="Weather timeline">
         <div class="gw-now-row">
           <div>
-            <div class="gw-temp" id="gw-temp">21°</div>
-            <div id="gw-condition">Rain approaching</div>
+            <div class="gw-temp" id="gw-temp">—</div>
+            <div id="gw-condition">Loading current conditions…</div>
           </div>
           <button type="button" class="btn" id="gw-play" aria-pressed="false">Play</button>
         </div>
-        <input class="form-range gw-range" id="gw-time-slider" type="range" min="0" max="12" step="0.01" value="4" aria-label="Weather time">
-        <div class="gw-time-row text-small"><span>10 AM</span><strong id="gw-time">Today · 2:00 PM</strong><span>10 PM</span></div>
+        <input class="form-range gw-range" id="gw-time-slider" type="range" min="0" max="12" step="0.01" value="12" aria-label="Weather radar time">
+        <div class="gw-time-row text-small"><span id="gw-time-start">—</span><strong id="gw-time">Latest radar</strong><span id="gw-time-end">Now</span></div>
         <div class="gw-observed-line">
-          <span class="viz-badge">Radar</span><span class="viz-badge">4 nearby stations</span><span class="viz-badge">12 mm expected</span>
+          <span class="viz-badge" id="gw-radar-badge">Live radar</span><span class="viz-badge" id="gw-wind-badge">Wind —</span><span class="viz-badge" id="gw-rain-badge">Rain —</span>
         </div>
       </section>
 
       <section class="gw-panel gw-glass gw-stations-panel" aria-label="Nearby weather stations">
         <div class="gw-panel-head">
           <div><strong>Nearby observations</strong><div class="text-small text-muted">Official + personal stations</div></div>
-          <span class="viz-badge">4 current</span>
+          <span class="viz-badge">Connector foundation</span>
         </div>
         <div class="gw-station-list">
-          <button type="button" class="btn gw-station-row" data-open-station="Melfort North PWS">
-            <span><strong>Melfort North</strong><br><span class="text-small text-muted">Personal · 2 min ago · Quality checked</span></span>
-            <span class="gw-reading"><strong>21°</strong><br><span class="text-small text-muted">Wind 18 km/h</span></span>
-          </button>
-          <button type="button" class="btn gw-station-row" data-open-station="Saskatoon Airport">
-            <span><strong>Saskatoon Airport</strong><br><span class="text-small text-muted">Official · 8 min ago</span></span>
-            <span class="gw-reading"><strong>22°</strong><br><span class="text-small text-muted">Rain 0.4 mm</span></span>
-          </button>
+          <div class="gw-station-row">
+            <span><strong>No invented station readings</strong><br><span class="text-small text-muted">Personal and official station connectors will appear here only after their live feeds are connected and quality checked.</span></span>
+          </div>
         </div>
       </section>
 
@@ -470,21 +1175,11 @@
       const root = document.getElementById("gisit-gateway-prototype");
       const slider = document.getElementById("gw-time-slider");
       const playButton = document.getElementById("gw-play");
-      const weatherFrames = [
-        { temp: 18, condition: "Bright · clouds building", longitude: -109.2, opacity: .35 },
-        { temp: 19, condition: "Partly cloudy", longitude: -108.7, opacity: .43 },
-        { temp: 20, condition: "Clouds increasing", longitude: -108.2, opacity: .52 },
-        { temp: 21, condition: "Rain west of Melfort", longitude: -107.7, opacity: .63 },
-        { temp: 21, condition: "Rain approaching", longitude: -107.1, opacity: .74 },
-        { temp: 20, condition: "Showers nearby", longitude: -106.5, opacity: .86 },
-        { temp: 18, condition: "Rain beginning", longitude: -105.9, opacity: 1 },
-        { temp: 17, condition: "Steady rain", longitude: -105.2, opacity: 1 },
-        { temp: 16, condition: "Rain · locally heavy", longitude: -104.5, opacity: .93 },
-        { temp: 16, condition: "Rain easing", longitude: -103.8, opacity: .79 },
-        { temp: 15, condition: "Scattered showers", longitude: -103.1, opacity: .62 },
-        { temp: 14, condition: "Cloudy", longitude: -102.4, opacity: .46 },
-        { temp: 13, condition: "Mostly cloudy", longitude: -101.7, opacity: .33 }
-      ];
+      let radarFrames = [];
+      let radarLowLayer = null;
+      let radarHighLayer = null;
+      let liveWeather = null;
+      let weatherRequest = 0;
       let animationFrame = null;
       let previousTime = null;
       let currentBase = null;
@@ -531,19 +1226,9 @@
         field: style.getPropertyValue("--viz-series-4").trim() || "currentColor",
         risk: style.getPropertyValue("--viz-series-5").trim() || "currentColor"
       };
-      const radarParts = [
-        window.L.circle([52.7, -107.1], { radius: 145000, stroke: false, fillColor: colors.rain, fillOpacity: .17 }),
-        window.L.circle([52.7, -107.1], { radius: 92000, stroke: false, fillColor: colors.moderate, fillOpacity: .25 }),
-        window.L.circle([52.7, -107.1], { radius: 43000, stroke: false, fillColor: colors.heavy, fillOpacity: .36 })
-      ];
-      const radarLayer = window.L.layerGroup(radarParts).addTo(map);
+      const radarLayer = window.L.layerGroup().addTo(map);
 
-      const stationData = [
-        { name: "Melfort North PWS", lat: 52.905, lon: -104.72, value: "21°", type: "Personal", age: "2 min", qc: "Quality checked", wind: "18 km/h" },
-        { name: "Kinistino Farm PWS", lat: 52.955, lon: -105.08, value: "20°", type: "Personal", age: "4 min", qc: "Quality checked", wind: "16 km/h" },
-        { name: "Saskatoon Airport", lat: 52.170, lon: -106.70, value: "22°", type: "Official", age: "8 min", qc: "Official observation", wind: "20 km/h" },
-        { name: "Regina Airport", lat: 50.432, lon: -104.666, value: "24°", type: "Official", age: "7 min", qc: "Official observation", wind: "23 km/h" }
-      ];
+      const stationData = [];
       const stationMarkers = stationData.map(function (station) {
         const icon = window.L.divIcon({
           className: "",
@@ -573,32 +1258,91 @@
         }).bindTooltip("Creek Field · Canola · Scout tomorrow")
       ]);
 
-      function interpolate(a, b, amount) { return a + (b - a) * amount; }
-      function timeLabel(position) {
-        const minutesTotal = 600 + Math.round(position * 60);
-        const hours24 = Math.floor(minutesTotal / 60) % 24;
-        const minutes = minutesTotal % 60;
-        const suffix = hours24 >= 12 ? "PM" : "AM";
-        const hours = hours24 % 12 || 12;
-        return "Today · " + hours + ":" + String(minutes).padStart(2, "0") + " " + suffix;
+      function weatherDescription(code) {
+        if (code === 0) return "Clear";
+        if (code <= 3) return "Partly cloudy";
+        if (code <= 48) return "Fog or low cloud";
+        if (code <= 57) return "Drizzle";
+        if (code <= 67) return "Rain";
+        if (code <= 77) return "Snow";
+        if (code <= 82) return "Rain showers";
+        if (code <= 86) return "Snow showers";
+        return "Thunderstorms";
+      }
+      function formatRadarTime(unixTime) {
+        return new Date(unixTime * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      }
+      function radarTile(frame) {
+        return window.L.tileLayer("https://tilecache.rainviewer.com" + frame.path + "/256/{z}/{x}/{y}/2/1_1.png", {
+          tileSize: 256,
+          opacity: 0,
+          attribution: "© RainViewer"
+        });
       }
       function renderWeather() {
-        const position = Number(slider.value);
+        if (!radarFrames.length) return;
+        const position = Math.max(0, Math.min(radarFrames.length - 1, Number(slider.value)));
         const lowIndex = Math.floor(position);
-        const highIndex = Math.min(weatherFrames.length - 1, Math.ceil(position));
-        const amount = position - lowIndex;
-        const low = weatherFrames[lowIndex];
-        const high = weatherFrames[highIndex];
-        document.getElementById("gw-temp").textContent = Math.round(interpolate(low.temp, high.temp, amount)) + "°";
-        document.getElementById("gw-condition").textContent = weatherFrames[Math.round(position)].condition;
-        document.getElementById("gw-time").textContent = timeLabel(position);
-        const longitude = interpolate(low.longitude, high.longitude, amount);
-        const opacity = interpolate(low.opacity, high.opacity, amount);
-        const offsets = [-.45, 0, .34];
-        radarParts.forEach(function (part, index) {
-          part.setLatLng([52.7, longitude + offsets[index]]);
-          part.setStyle({ fillOpacity: opacity * [.17, .25, .36][index] });
+        const highIndex = Math.min(radarFrames.length - 1, Math.ceil(position));
+        const fraction = position - lowIndex;
+        const lowFrame = radarFrames[lowIndex];
+        const highFrame = radarFrames[highIndex];
+        if (!radarLowLayer || radarLowLayer._gwPath !== lowFrame.path) {
+          if (radarLowLayer) radarLayer.removeLayer(radarLowLayer);
+          radarLowLayer = radarTile(lowFrame);
+          radarLowLayer._gwPath = lowFrame.path;
+          radarLayer.addLayer(radarLowLayer);
+        }
+        if (!radarHighLayer || radarHighLayer._gwPath !== highFrame.path) {
+          if (radarHighLayer) radarLayer.removeLayer(radarHighLayer);
+          radarHighLayer = radarTile(highFrame);
+          radarHighLayer._gwPath = highFrame.path;
+          radarLayer.addLayer(radarHighLayer);
+        }
+        radarLowLayer.setOpacity(.72 * (1 - fraction));
+        radarHighLayer.setOpacity(highIndex === lowIndex ? 0 : .72 * fraction);
+        document.getElementById("gw-time").textContent = formatRadarTime(radarFrames[Math.round(position)].time) + " · observed radar";
+      }
+      async function loadRadar() {
+        const response = await fetch("https://api.rainviewer.com/public/weather-maps.json");
+        if (!response.ok) throw new Error("Radar unavailable");
+        const data = await response.json();
+        radarFrames = (data.radar && data.radar.past) || [];
+        if (!radarFrames.length) throw new Error("No radar frames");
+        slider.min = "0";
+        slider.max = String(radarFrames.length - 1);
+        slider.value = slider.max;
+        document.getElementById("gw-time-start").textContent = formatRadarTime(radarFrames[0].time);
+        document.getElementById("gw-time-end").textContent = "Now";
+        document.getElementById("gw-radar-badge").textContent = radarFrames.length + " live radar frames";
+        renderWeather();
+      }
+      async function loadWeatherForMap() {
+        const request = ++weatherRequest;
+        const center = map.getCenter();
+        document.getElementById("gw-data-status").textContent = "Updating live weather…";
+        const params = new URLSearchParams({
+          latitude: center.lat.toFixed(4),
+          longitude: center.lng.toFixed(4),
+          current: "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m",
+          hourly: "precipitation_probability,precipitation,temperature_2m,wind_speed_10m",
+          forecast_days: "2",
+          timezone: "auto"
         });
+        const response = await fetch("https://api.open-meteo.com/v1/forecast?" + params);
+        if (!response.ok) throw new Error("Live forecast unavailable");
+        const data = await response.json();
+        if (request !== weatherRequest) return;
+        liveWeather = data;
+        const current = data.current;
+        const rainNext24 = data.hourly.precipitation.slice(0, 24).reduce(function (sum, value) { return sum + (value || 0); }, 0);
+        document.getElementById("gw-temp").textContent = Math.round(current.temperature_2m) + "°";
+        document.getElementById("gw-condition").textContent = weatherDescription(current.weather_code) + " · humidity " + current.relative_humidity_2m + "%";
+        document.getElementById("gw-wind-badge").textContent = "Wind " + Math.round(current.wind_speed_10m) + " km/h";
+        document.getElementById("gw-rain-badge").textContent = "Next 24h " + rainNext24.toFixed(1) + " mm";
+        document.getElementById("gw-location-label").textContent = center.lat.toFixed(2) + ", " + center.lng.toFixed(2);
+        document.getElementById("gw-data-status").textContent = "Live · updated " + new Date(current.time).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        document.getElementById("gw-context").textContent = weatherDescription(current.weather_code) + " · gusts " + Math.round(current.wind_gusts_10m) + " km/h · move the map for local conditions";
       }
       function stopAnimation() {
         if (animationFrame) window.cancelAnimationFrame(animationFrame);
@@ -696,16 +1440,12 @@
         currentBase.addTo(map);
       });
       document.getElementById("gw-overlay").addEventListener("change", function (event) {
-        const presets = {
-          radar: { colors: [colors.rain, colors.moderate, colors.heavy], message: "Radar · observed precipitation moving toward Melfort" },
-          clouds: { colors: [colors.wind, colors.rain, colors.moderate], message: "Satellite clouds · observed coverage and movement" },
-          wind: { colors: [colors.wind, colors.wind, colors.temperature], message: "Wind and gusts · strongest west of Melfort" },
-          "rain-total": { colors: [colors.rain, colors.moderate, colors.heavy], message: "Forecast rain total · approximately 12 mm by tonight" },
-          temperature: { colors: [colors.moderate, colors.temperature, colors.heavy], message: "Temperature · cooler air arriving with the rain band" }
-        };
-        const preset = presets[event.target.value];
-        radarParts.forEach(function (part, index) { part.setStyle({ fillColor: preset.colors[index] }); });
-        document.getElementById("gw-context").textContent = preset.message;
+        if (event.target.value !== "radar") {
+          event.target.value = "radar";
+          document.getElementById("gw-context").textContent = "Live radar is active. Additional live map layers will be connected separately.";
+        } else {
+          document.getElementById("gw-context").textContent = "Live RainViewer radar · use the slider to inspect observed movement";
+        }
       });
       root.querySelectorAll(".gw-nav").forEach(function (button) {
         button.addEventListener("click", function () { setScreen(button.dataset.screen); });
@@ -735,9 +1475,261 @@
       root.dataset.screen = "weather";
       root.dataset.tier = "free";
       map.on("zoomend", updateZoomLabel);
+      let moveTimer = null;
+      map.on("moveend", function () {
+        window.clearTimeout(moveTimer);
+        moveTimer = window.setTimeout(function () {
+          loadWeatherForMap().catch(function () {
+            document.getElementById("gw-data-status").textContent = "Live weather temporarily unavailable";
+          });
+        }, 350);
+      });
       updateZoomLabel();
-      renderWeather();
+      Promise.all([loadRadar(), loadWeatherForMap()]).catch(function () {
+        document.getElementById("gw-context").textContent = "One or more live weather feeds are temporarily unavailable.";
+      });
       window.setTimeout(function () { map.invalidateSize(); }, 100);
     }());
   </script>
 </div>
+
+<script id="codex-visualization-floating-ui-core" src="https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js"></script>
+<script id="codex-visualization-floating-ui-dom" src="https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js"></script>
+<script id="codex-visualization-lucide" async src="https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js"></script>
+<script id="codex-visualization-tooltip">/* oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-call, typescript/no-unsafe-return */
+// Runs inside the visualization sandbox, not the host webview.
+(() => {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set(["top", "right", "bottom", "left"]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =>
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest("[data-tooltip]")
+      : null;
+  const containsTarget = (trigger, target) =>
+    target?.nodeType != null && trigger.contains(target);
+  const getContent = (trigger) =>
+    trigger.getAttribute("data-tooltip")?.trim() ?? "";
+  const getPlacement = (trigger) => {
+    const placement = trigger.getAttribute("data-tooltip-placement");
+    return tooltipPlacements.has(placement) ? placement : "top";
+  };
+  const getTooltip = () => {
+    if (tooltip == null) {
+      tooltip = document.createElement("div");
+      tooltip.id = tooltipId;
+      tooltip.className = "tooltip";
+      tooltip.setAttribute("role", "tooltip");
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) => {
+    const ids = new Set(
+      (trigger.getAttribute("aria-describedby") ?? "")
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute("aria-describedby");
+    } else {
+      trigger.setAttribute("aria-describedby", [...ids].join(" "));
+    }
+  };
+  const clearOpenTimeout = () => {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) => {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) => {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              "--tooltip-available-width",
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              "--tooltip-available-height",
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: "fixed",
+    })
+      .then(({ x, y }) => {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = "visible";
+      })
+      .catch(() => {
+        if (activeTrigger === trigger && request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) => {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = "hidden";
+    floating.style.transform = "translate(0, 0)";
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () => {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) => {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() < skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() => {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) => {
+    if (event.pointerType === "touch") {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(":focus-visible")) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) => {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () => {
+    closeTooltip(false);
+    document.removeEventListener("pointerover", handlePointerOpen);
+    document.removeEventListener("pointerout", handleLeave);
+    document.removeEventListener("focusin", handleFocusIn);
+    document.removeEventListener("focusout", handleLeave);
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("contextmenu", handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener("pointerover", handlePointerOpen);
+  document.addEventListener("pointerout", handleLeave);
+  document.addEventListener("focusin", handleFocusIn);
+  document.addEventListener("focusout", handleLeave);
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("contextmenu", handleContextMenu);
+  window.addEventListener("pagehide", destroy, { once: true });
+})();
+</script>
+<script id="codex-visualization-lucide-initialization">(() => {
+  const initialize = () => {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById("codex-visualization-lucide")
+    ?.addEventListener("load", initialize, { once: true });
+})();
+</script>
+</body>
+</html>
