@@ -4,6 +4,8 @@ import fs from 'node:fs/promises';
 const baseUrl = process.env.SITE_URL || 'http://127.0.0.1:8000';
 const artifactDir = process.env.ARTIFACT_DIR || 'artifacts';
 const screenshotDir = process.env.SCREENSHOT_DIR || `${artifactDir}/site-proof`;
+const foodBankBuilderPattern = '**/AKfycbzXzcJrEfcG26FIltfrqHQFsRPD2Qu_War3vGHdFBpbqKN6CEWewmF8_6Qab9dbmTLN/**';
+const serviceCorpsEndpointPattern = '**/AKfycbzVIx_2Qc0w9f4ch7b3uo-n8Krs86r4_DAAT8CPhwkfCGpsA3WryOApucfUp9n9eqou/**';
 
 const routes = [
   { slug: 'homepage', path: '/index.html', heading: 'Better decisions move food further.', essential: 'Skills for Food Security Service Corps' },
@@ -56,7 +58,12 @@ try {
       contentType: 'application/javascript',
       body: "window.FAP_SERVICE_CORPS_CONFIG=Object.freeze({endpoint:'',responseOrigins:[]});",
     }));
-    await context.route('https://script.google.com/**', async route => {
+    await context.route(foodBankBuilderPattern, route => route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: '<!doctype html><title>QA isolation</title><p>Live truckload builder isolated during automated QA.</p>',
+    }));
+    await context.route(serviceCorpsEndpointPattern, async route => {
       if (route.request().method() === 'POST') {
         blockedIntakeRequests.push(route.request().url());
         await route.abort('blockedbyclient');
@@ -161,7 +168,12 @@ try {
       contentType: 'application/javascript',
       body: "window.FAP_SERVICE_CORPS_CONFIG=Object.freeze({endpoint:'',responseOrigins:[]});",
     }));
-    await context.route('https://script.google.com/**', async route => {
+    await context.route(foodBankBuilderPattern, route => route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: '<!doctype html><title>QA isolation</title><p>Live truckload builder isolated during automated QA.</p>',
+    }));
+    await context.route(serviceCorpsEndpointPattern, async route => {
       if (route.request().method() === 'POST') {
         blockedIntakeRequests.push(route.request().url());
         await route.abort('blockedbyclient');
