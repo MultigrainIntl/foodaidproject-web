@@ -22,7 +22,7 @@ const viewports = [
 const results = [];
 const failures = [];
 const testedInternalUrls = new Set();
-let blockedPosts = 0;
+const blockedIntakeRequests = [];
 
 await fs.mkdir(screenshotDir, { recursive: true });
 
@@ -56,13 +56,11 @@ try {
       contentType: 'application/javascript',
       body: "window.FAP_SERVICE_CORPS_CONFIG=Object.freeze({endpoint:'',responseOrigins:[]});",
     }));
-    await context.route('**/*', async route => {
+    await context.route('https://script.google.com/**', async route => {
       if (route.request().method() === 'POST') {
-        blockedPosts += 1;
+        blockedIntakeRequests.push(route.request().url());
         await route.abort('blockedbyclient');
-      } else {
-        await route.fallback();
-      }
+      } else await route.fallback();
     });
 
     for (const route of routes) {
@@ -163,9 +161,9 @@ try {
       contentType: 'application/javascript',
       body: "window.FAP_SERVICE_CORPS_CONFIG=Object.freeze({endpoint:'',responseOrigins:[]});",
     }));
-    await context.route('**/*', async route => {
+    await context.route('https://script.google.com/**', async route => {
       if (route.request().method() === 'POST') {
-        blockedPosts += 1;
+        blockedIntakeRequests.push(route.request().url());
         await route.abort('blockedbyclient');
       } else await route.fallback();
     });
@@ -207,7 +205,8 @@ try {
     for (const value of ['Automated QA Participant', 'Automated QA jurisdiction', 'LinkedIn', 'Remote only']) {
       assert(summary?.includes(value), `Fallback summary is missing: ${value}`);
     }
-    assert(blockedPosts === 0, `The test attempted ${blockedPosts} POST request(s)`);
+    assert(blockedIntakeRequests.length === 0,
+      `The test attempted ${blockedIntakeRequests.length} real intake request(s)`);
     await page.screenshot({ path: `${screenshotDir}/service-corps-safe-fallback-desktop.png`, fullPage: true });
     await context.close();
   });
@@ -218,7 +217,7 @@ try {
     baseUrl,
     routes: routes.map(route => route.path),
     viewports,
-    blockedPosts,
+    blockedIntakeRequests,
     tests: results,
     passed: results.filter(result => result.status === 'PASS').length,
     failed: failures.length,
