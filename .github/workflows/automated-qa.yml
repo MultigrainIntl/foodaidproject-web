@@ -26,7 +26,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
@@ -34,11 +34,11 @@ jobs:
       - name: Run browser QA
         run: npm run qa
 
-      - name: Upload QA screenshots
+      - name: Upload QA evidence and diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: automated-qa-screenshots
-          path: artifacts/site-proof
+          name: automated-qa-evidence
+          path: artifacts
           if-no-files-found: warn
           retention-days: 14

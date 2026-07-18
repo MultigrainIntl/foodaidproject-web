@@ -1,7 +1,6 @@
 {
   "name": "foodaidproject-web",
   "private": true,
-  "type": "module",
   "scripts": {
     "serve": "serve . -l 8000 --no-clipboard",
     "qa:browser": "node scripts/browser-check.mjs",

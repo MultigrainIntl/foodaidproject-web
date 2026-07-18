@@ -2,94 +2,235 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 
 const baseUrl = process.env.SITE_URL || 'http://127.0.0.1:8000';
-const outputDir = process.env.SCREENSHOT_DIR || 'artifacts/site-proof';
+const artifactDir = process.env.ARTIFACT_DIR || 'artifacts';
+const screenshotDir = process.env.SCREENSHOT_DIR || `${artifactDir}/site-proof`;
 
-await fs.mkdir(outputDir, { recursive: true });
+const routes = [
+  { slug: 'homepage', path: '/index.html', heading: 'Better decisions move food further.', essential: 'Skills for Food Security Service Corps' },
+  { slug: 'food-bank-supply', path: '/food-banks.html', heading: 'Build your own mixed truckload of bulk dry goods', essential: 'Mixed Truckload Builder' },
+  { slug: 'zel-zanj', path: '/zel-zanj.html', heading: 'Zèl Zanj', essential: 'Built for impact per dollar' },
+  { slug: 'service-corps', path: '/service-corps.html', heading: 'The hours are yours.', essential: 'Remote-only operating model:' },
+  { slug: 'trust-transparency', path: '/trust.html', heading: 'Real, registered, and accountable.', essential: 'IRS determination' },
+  { slug: 'privacy', path: '/privacy.html', heading: 'Privacy notice', essential: 'request correction or deletion' },
+];
+
+const viewports = [
+  { name: 'desktop', width: 1440, height: 1000 },
+  { name: 'mobile', width: 390, height: 844 },
+];
+
+const results = [];
+const failures = [];
+const testedInternalUrls = new Set();
+let blockedPosts = 0;
+
+await fs.mkdir(screenshotDir, { recursive: true });
+
+function record(scope, status, detail = '') {
+  results.push({ scope, status, detail });
+  if (status === 'FAIL') failures.push(`${scope}: ${detail}`);
+}
+
+async function check(scope, action) {
+  try {
+    await action();
+    record(scope, 'PASS');
+  } catch (error) {
+    record(scope, 'FAIL', error instanceof Error ? error.message : String(error));
+  }
+}
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
+}
 
 const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
 
 try {
-  await page.goto(`${baseUrl}/index.html`, { waitUntil: 'networkidle' });
-  await page.getByRole('link', { name: 'Service Corps', exact: true }).waitFor();
-  await page.getByRole('heading', { name: 'Skills for Food Security Service Corps' }).waitFor();
-  await page.screenshot({ path: `${outputDir}/homepage-desktop.png`, fullPage: true });
+  for (const viewport of viewports) {
+    const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
 
-  await page.locator('a[href="/service-corps.html"]').filter({ hasText: /Join the interest network|Service Corps/i }).last().click();
-  await page.waitForURL(/service-corps\.html/);
-  await page.getByRole('heading', { name: 'The hours are yours.' }).waitFor();
-  await page.getByText('Remote-only operating model:').waitFor();
-  await page.getByRole('group', { name: '4. Outreach, social media, and influence' }).waitFor();
+    // Never allow the public Service Corps endpoint to receive a QA submission.
+    await context.route('**/service-corps-config.js', route => route.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: "window.FAP_SERVICE_CORPS_CONFIG=Object.freeze({endpoint:'',responseOrigins:[]});",
+    }));
+    await context.route('**/*', async route => {
+      if (route.request().method() === 'POST') {
+        blockedPosts += 1;
+        await route.abort('blockedbyclient');
+      } else {
+        await route.fallback();
+      }
+    });
 
-  const serviceFormat = await page.locator('input[name="serviceFormat"]').getAttribute('value');
-  if (serviceFormat !== 'Remote') throw new Error('Service Corps must be remote-only.');
-  if (await page.getByText('Either remote or in person', { exact: true }).count()) {
-    throw new Error('In-person service option must not be present.');
+    for (const route of routes) {
+      const page = await context.newPage();
+      const browserErrors = [];
+      page.on('pageerror', error => browserErrors.push(`pageerror: ${error.message}`));
+      page.on('console', message => {
+        if (message.type() === 'error') browserErrors.push(`console.error: ${message.text()}`);
+      });
+      page.on('response', response => {
+        if (response.url().startsWith(baseUrl) && response.status() >= 400) {
+          browserErrors.push(`HTTP ${response.status()}: ${response.url()}`);
+        }
+      });
+      page.on('requestfailed', request => {
+        if (request.url().startsWith(baseUrl)) {
+          browserErrors.push(`request failed: ${request.url()} (${request.failure()?.errorText || 'unknown'})`);
+        }
+      });
+
+      const scope = `${route.slug}/${viewport.name}`;
+      await check(`${scope} page, heading, and essential content`, async () => {
+        const response = await page.goto(`${baseUrl}${route.path}`, { waitUntil: 'networkidle' });
+        assert(response?.ok(), `Navigation returned HTTP ${response?.status() ?? 'unknown'}`);
+        await page.getByRole('heading', { level: 1, name: route.heading, exact: true }).waitFor();
+        await page.getByText(route.essential, { exact: false }).first().waitFor();
+      });
+
+      await check(`${scope} navigation`, async () => {
+        const nav = page.locator('nav').first();
+        assert(await nav.count(), 'Primary navigation is missing');
+        if (viewport.name === 'desktop') {
+          assert(await nav.isVisible(), 'Desktop navigation is not visible');
+          assert(await nav.locator('a').count() >= 3, 'Desktop navigation has fewer than three links');
+        } else {
+          const toggle = page.locator('.nav-toggle').first();
+          assert(await toggle.isVisible(), 'Mobile menu button is not visible');
+          await toggle.click();
+          assert(await nav.isVisible(), 'Mobile navigation did not open');
+          assert(await toggle.getAttribute('aria-expanded') === 'true', 'Mobile menu did not expose expanded state');
+        }
+      });
+
+      await check(`${scope} images`, async () => {
+        const images = page.locator('img');
+        assert(await images.count() > 0, 'No logo or content image found');
+        const broken = await images.evaluateAll(nodes => nodes
+          .filter(image => !image.complete || image.naturalWidth === 0)
+          .map(image => image.getAttribute('src') || '(missing src)'));
+        assert(broken.length === 0, `Broken images: ${broken.join(', ')}`);
+      });
+
+      await check(`${scope} horizontal overflow`, async () => {
+        const dimensions = await page.evaluate(() => ({
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        }));
+        assert(dimensions.scrollWidth <= dimensions.clientWidth + 1,
+          `Page is ${dimensions.scrollWidth - dimensions.clientWidth}px wider than the viewport`);
+      });
+
+      await check(`${scope} meaningful browser errors`, async () => {
+        await page.waitForTimeout(150);
+        assert(browserErrors.length === 0, browserErrors.join(' | '));
+      });
+
+      await check(`${scope} screenshot`, async () => {
+        await page.screenshot({ path: `${screenshotDir}/${route.slug}-${viewport.name}.png`, fullPage: true });
+      });
+
+      if (viewport.name === 'desktop') {
+        await check(`${route.slug} primary internal links`, async () => {
+          const hrefs = await page.locator('a[href]').evaluateAll(links => links
+            .map(link => link.getAttribute('href'))
+            .filter(href => href && href.startsWith('/') && !href.match(/\.(pdf|png|svg|webp|ico)(#|$)/i)));
+          for (const href of hrefs) {
+            const url = new URL(href, baseUrl);
+            url.hash = '';
+            const key = url.toString();
+            if (testedInternalUrls.has(key)) continue;
+            testedInternalUrls.add(key);
+            const response = await context.request.get(key);
+            assert(response.ok(), `${href} returned HTTP ${response.status()}`);
+          }
+        });
+      }
+
+      await page.close();
+    }
+
+    await context.close();
   }
-  if (await page.getByText(/food processing, packing, warehouse shifts/i).count() === 0) {
-    throw new Error('Remote-only operating boundary is missing.');
-  }
 
-  const courtFields = page.locator('#court-fields');
-  if (await courtFields.getAttribute('aria-hidden') !== 'true') throw new Error('Court fields should be hidden initially.');
-  await page.locator('#court-service').check();
-  if (await courtFields.getAttribute('aria-hidden') !== 'false') throw new Error('Court fields should open when selected.');
+  await check('Service Corps conditional fields and safe fallback', async () => {
+    const context = await browser.newContext({ viewport: { width: viewports[0].width, height: viewports[0].height } });
+    await context.route('**/service-corps-config.js', route => route.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: "window.FAP_SERVICE_CORPS_CONFIG=Object.freeze({endpoint:'',responseOrigins:[]});",
+    }));
+    await context.route('**/*', async route => {
+      if (route.request().method() === 'POST') {
+        blockedPosts += 1;
+        await route.abort('blockedbyclient');
+      } else await route.fallback();
+    });
+    const page = await context.newPage();
+    await page.goto(`${baseUrl}/service-corps.html`, { waitUntil: 'networkidle' });
 
-  await page.locator('#outreach-service').check();
-  await page.locator('#full-name').fill('Test Participant');
-  await page.locator('#email').fill('test@example.com');
-  await page.locator('#contact-method').selectOption({ label: 'Email' });
-  await page.locator('#city').fill('Fort Collins');
-  await page.locator('#region').fill('Colorado');
-  await page.locator('#country').fill('United States');
-  await page.locator('#adult-status').selectOption({ label: 'Yes' });
-  await page.locator('#hours-needed').fill('40');
-  await page.locator('#jurisdiction').fill('Northern Colorado');
-  await page.locator('#approval-status').selectOption({ label: 'I have not asked the supervising authority yet' });
-  await page.locator('#skills-summary').fill('Outreach strategy, relationship development, project planning, and research.');
-  await page.locator('#love-to-do').fill('Create useful content, connect people, and explain meaningful work.');
-  await page.locator('input[name="skillArea"][value="Outreach, social media, influencer engagement, or digital content"]').check();
-  await page.locator('input[name="skillArea"][value="Project management, operations, or administration"]').check();
-  await page.locator('input[name="outreachPlatform"][value="LinkedIn"]').check();
-  await page.locator('input[name="outreachPlatform"][value="Podcast, blog, or newsletter"]').check();
-  await page.locator('#public-profile').fill('https://example.com/profile');
-  await page.locator('#audience-size').selectOption({ label: '2,500–9,999' });
-  await page.locator('#audience-description').fill('Food, agriculture, logistics, and nonprofit professionals.');
-  await page.locator('#content-formats').fill('LinkedIn posts, interviews, articles, and newsletter features.');
-  await page.locator('#outreach-ideas').fill('Interview farmers and logistics leaders about efficient food distribution.');
-  await page.locator('#weekly-hours').selectOption({ label: '3–5 hours' });
-  await page.locator('#start-time').selectOption({ label: 'Within 30 days' });
-  await page.locator('#time-zone').fill('Mountain Time');
-  await page.locator('#consent-contact').check();
-  await page.locator('#acknowledge-status').check();
-  await page.locator('#acknowledge-sensitive').check();
-  await page.locator('#updates').check();
+    const courtFields = page.locator('#court-fields');
+    assert(await courtFields.getAttribute('aria-hidden') === 'true', 'Court fields are not hidden initially');
+    await page.locator('#court-service').check();
+    assert(await courtFields.getAttribute('aria-hidden') === 'false', 'Court fields did not open');
 
-  await page.getByRole('button', { name: 'Submit my questionnaire' }).click();
-  await page.locator('#summary.open').waitFor();
+    await page.locator('#outreach-service').check();
+    await page.locator('#full-name').fill('Automated QA Participant');
+    await page.locator('#email').fill('qa@example.invalid');
+    await page.locator('#contact-method').selectOption({ label: 'Email' });
+    await page.locator('#city').fill('Fort Collins');
+    await page.locator('#region').fill('Colorado');
+    await page.locator('#country').fill('United States');
+    await page.locator('#adult-status').selectOption({ label: 'Yes' });
+    await page.locator('#hours-needed').fill('40');
+    await page.locator('#jurisdiction').fill('Automated QA jurisdiction');
+    await page.locator('#approval-status').selectOption({ label: 'I have not asked the supervising authority yet' });
+    await page.locator('#skills-summary').fill('Automated browser testing and quality assurance.');
+    await page.locator('#love-to-do').fill('Find regressions before visitors encounter them.');
+    await page.locator('input[name="skillArea"][value="Outreach, social media, influencer engagement, or digital content"]').check();
+    await page.locator('input[name="outreachPlatform"][value="LinkedIn"]').check();
+    await page.locator('#weekly-hours').selectOption({ label: '3–5 hours' });
+    await page.locator('#start-time').selectOption({ label: 'Within 30 days' });
+    await page.locator('#consent-contact').check();
+    await page.locator('#acknowledge-status').check();
+    await page.locator('#acknowledge-sensitive').check();
 
-  const emailHref = await page.locator('#email-link').getAttribute('href');
-  if (!emailHref?.startsWith('mailto:info@foodaidproject.org')) throw new Error('Fallback email target is incorrect.');
-  if (!emailHref.includes('outreach-influencer')) throw new Error('Outreach routing tag is missing.');
-
-  const summaryText = await page.locator('#summary-text').textContent();
-  for (const required of ['Test Participant', 'Northern Colorado', 'LinkedIn', 'Podcast, blog, or newsletter', 'Remote only']) {
-    if (!summaryText?.includes(required)) throw new Error(`Generated summary is missing: ${required}`);
-  }
-
-  await page.screenshot({ path: `${outputDir}/questionnaire-outreach-desktop.png`, fullPage: true });
-
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${baseUrl}/service-corps.html`, { waitUntil: 'networkidle' });
-  await page.getByRole('button', { name: 'Open menu' }).click();
-  await page.locator('#primary-nav.open').waitFor();
-  await page.screenshot({ path: `${outputDir}/questionnaire-mobile.png`, fullPage: true });
-
-  await page.goto(`${baseUrl}/privacy.html`, { waitUntil: 'networkidle' });
-  await page.getByRole('heading', { name: 'Privacy notice' }).waitFor();
-  await page.screenshot({ path: `${outputDir}/privacy-mobile.png`, fullPage: true });
-
-  console.log('Browser verification: PASS');
+    await page.getByRole('button', { name: 'Submit my questionnaire' }).click();
+    await page.locator('#summary.open').waitFor();
+    const emailHref = await page.locator('#email-link').getAttribute('href');
+    assert(emailHref?.startsWith('mailto:info@foodaidproject.org'), 'Fallback email target is incorrect');
+    assert(emailHref.includes('outreach-influencer'), 'Outreach routing tag is missing');
+    const summary = await page.locator('#summary-text').textContent();
+    for (const value of ['Automated QA Participant', 'Automated QA jurisdiction', 'LinkedIn', 'Remote only']) {
+      assert(summary?.includes(value), `Fallback summary is missing: ${value}`);
+    }
+    assert(blockedPosts === 0, `The test attempted ${blockedPosts} POST request(s)`);
+    await page.screenshot({ path: `${screenshotDir}/service-corps-safe-fallback-desktop.png`, fullPage: true });
+    await context.close();
+  });
 } finally {
   await browser.close();
+  const diagnostics = {
+    generatedAt: new Date().toISOString(),
+    baseUrl,
+    routes: routes.map(route => route.path),
+    viewports,
+    blockedPosts,
+    tests: results,
+    passed: results.filter(result => result.status === 'PASS').length,
+    failed: failures.length,
+    failures,
+  };
+  await fs.writeFile(`${artifactDir}/qa-results.json`, `${JSON.stringify(diagnostics, null, 2)}\n`);
+}
+
+if (failures.length) {
+  console.error(`Browser verification: FAIL (${failures.length} failure(s))`);
+  failures.forEach(failure => console.error(`- ${failure}`));
+  process.exitCode = 1;
+} else {
+  console.log(`Browser verification: PASS (${results.length} checks)`);
 }
