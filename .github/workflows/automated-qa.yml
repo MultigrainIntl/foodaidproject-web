@@ -1,0 +1,44 @@
+name: Automated QA
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [fap-website-v2-candidate]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser QA
+        run: npm run qa
+
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: automated-qa-screenshots
+          path: artifacts/site-proof
+          if-no-files-found: warn
+          retention-days: 14
