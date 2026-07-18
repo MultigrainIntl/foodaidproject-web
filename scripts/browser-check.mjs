@@ -15,7 +15,7 @@ try {
   await page.getByRole('heading', { name: 'Skills for Food Security Service Corps' }).waitFor();
   await page.screenshot({ path: `${outputDir}/homepage-desktop.png`, fullPage: true });
 
-  await page.getByRole('link', { name: 'Complete the interest questionnaire' }).first().click();
+  await page.locator('a[href="/service-corps.html"]').filter({ hasText: /Join the interest network|Service Corps/i }).last().click();
   await page.waitForURL(/service-corps\.html/);
   await page.getByRole('heading', { name: 'The hours are yours.' }).waitFor();
   await page.getByText('Remote-only operating model:').waitFor();
