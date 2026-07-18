@@ -1,0 +1,15 @@
+{
+  "name": "foodaidproject-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "serve . -l 8000 --no-clipboard",
+    "qa:browser": "node scripts/browser-check.mjs",
+    "qa": "start-server-and-test serve http://127.0.0.1:8000 qa:browser"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0",
+    "serve": "^14.2.4",
+    "start-server-and-test": "^2.0.13"
+  }
+}
