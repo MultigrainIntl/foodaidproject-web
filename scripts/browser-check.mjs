@@ -114,6 +114,16 @@ try {
       await check(`${scope} images`, async () => {
         const images = page.locator('img');
         assert(await images.count() > 0, 'No logo or content image found');
+        for (const image of await images.all()) {
+          await image.scrollIntoViewIfNeeded();
+          await image.evaluate(node => {
+            if (node.complete) return;
+            return new Promise(resolve => {
+              node.addEventListener('load', resolve, { once: true });
+              node.addEventListener('error', resolve, { once: true });
+            });
+          });
+        }
         const broken = await images.evaluateAll(nodes => nodes
           .filter(image => !image.complete || image.naturalWidth === 0)
           .map(image => image.getAttribute('src') || '(missing src)'));
