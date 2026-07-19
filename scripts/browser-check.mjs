@@ -8,7 +8,7 @@ const foodBankBuilderPattern = '**/AKfycbzXzcJrEfcG26FIltfrqHQFsRPD2Qu_War3vGHdF
 const serviceCorpsEndpointPattern = '**/AKfycbzVIx_2Qc0w9f4ch7b3uo-n8Krs86r4_DAAT8CPhwkfCGpsA3WryOApucfUp9n9eqou/**';
 
 const routes = [
-  { slug: 'homepage', path: '/index.html', heading: 'Better decisions build stronger food systems.', essential: 'Skills for Food Security Service Corps' },
+  { slug: 'homepage', path: '/index.html', heading: 'Better decisions. Stronger food systems.', essential: 'Skills for Food Security Service Corps' },
   { slug: 'food-bank-supply', path: '/food-banks.html', heading: 'Build your own mixed truckload of bulk dry goods', essential: 'Mixed Truckload Builder' },
   { slug: 'zel-zanj', path: '/zel-zanj.html', heading: 'Zèl Zanj', essential: 'Built for impact per dollar' },
   { slug: 'service-corps', path: '/service-corps.html', heading: 'The hours are yours.', essential: 'Remote-only operating model:' },
