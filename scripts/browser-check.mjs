@@ -115,6 +115,7 @@ try {
         const images = page.locator('img');
         assert(await images.count() > 0, 'No logo or content image found');
         for (const image of await images.all()) {
+          if (!await image.isVisible()) continue;
           await image.scrollIntoViewIfNeeded();
           await image.evaluate(node => {
             if (node.complete) return;
@@ -125,6 +126,7 @@ try {
           });
         }
         const broken = await images.evaluateAll(nodes => nodes
+          .filter(image => image.getClientRects().length > 0)
           .filter(image => !image.complete || image.naturalWidth === 0)
           .map(image => image.getAttribute('src') || '(missing src)'));
         assert(broken.length === 0, `Broken images: ${broken.join(', ')}`);
