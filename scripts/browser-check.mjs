@@ -147,10 +147,11 @@ try {
       });
 
       if (route.slug === 'homepage') {
-        await check(`${scope} global agricultural radar`, async () => {
-          const radar = page.frameLocator('iframe[title="Live GISit observed radar across global agricultural regions"]');
+        await check(`${scope} global agricultural precipitation`, async () => {
+          const radar = page.frameLocator('iframe[title="Live GISit global precipitation across agricultural regions"]');
           const location = radar.locator('#radar-location');
           await location.waitFor();
+          await radar.locator('#radar-status', { hasText: 'recent' }).waitFor({ timeout: 10000 });
           const initialRegion = (await location.textContent())?.trim();
           assert(initialRegion && initialRegion !== 'Loading region…', 'Agricultural region did not initialize');
           assert(!initialRegion.includes('Melfort'), 'Private location remains in the radar rotation');

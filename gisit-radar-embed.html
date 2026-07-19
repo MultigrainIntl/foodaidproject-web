@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>GISit live radar preview</title>
+  <title>GISit global precipitation preview</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root{color-scheme:dark;--ink:#07120e;--panel:rgba(7,18,14,.88);--line:rgba(255,255,255,.2);--orange:#f47b20;--cream:#f5f0e7;--muted:#afbeb5;font-family:Arial,sans-serif}
@@ -19,12 +19,12 @@
   </style>
 </head>
 <body>
-  <main class="radar" aria-label="Live observed weather radar across global agricultural regions">
-    <div class="map" id="radar-map" role="img" aria-label="Animated live observed radar map"></div>
+  <main class="radar" aria-label="Live global precipitation across agricultural regions">
+    <div class="map" id="radar-map" role="img" aria-label="Animated global precipitation map"></div>
     <div class="top">
-      <div><p class="label">Global agricultural radar</p><div class="location" id="radar-location">Loading region…</div></div>
+      <div><p class="label">Global agricultural precipitation</p><div class="location" id="radar-location">Loading region…</div></div>
       <div class="region-panel">
-        <div class="status" id="radar-status">Connecting to live radar…</div>
+        <div class="status" id="radar-status">Connecting to global precipitation…</div>
         <div class="region-controls" aria-label="Agricultural region controls">
           <button id="region-prev" type="button" aria-label="Previous agricultural region">←</button>
           <span class="region-count" id="region-count" aria-live="polite"></span>
@@ -33,13 +33,13 @@
       </div>
     </div>
     <div class="bottom">
-      <div><div class="time" id="radar-time">Latest observed radar</div><div class="source">Live observed frames · RainViewer · Esri basemap</div></div>
+      <div><div class="time" id="radar-time">Latest precipitation frame</div><div class="source">Radar where available · modeled coverage elsewhere · Esri basemap</div></div>
       <div class="controls">
         <button class="play" id="radar-play" type="button" aria-pressed="false">Pause</button>
         <input id="radar-slider" type="range" min="0" max="12" step="0.01" value="12" aria-label="Observed radar time">
       </div>
     </div>
-    <div class="error" id="radar-error">Live radar is temporarily unavailable. <a href="https://weather.gisit.com" target="_blank" rel="noopener">Open GISit Weather</a>.</div>
+    <div class="error" id="radar-error">Global precipitation is temporarily unavailable. <a href="https://weather.gisit.com" target="_blank" rel="noopener">Open GISit Weather</a>.</div>
   </main>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -77,10 +77,10 @@
       }
       function pauseRotation(){rotationPaused=true;if(rotation)clearInterval(rotation);rotation=null;updateRegion(false)}
       function chooseRegion(step,manual){regionIndex=(regionIndex+step+regions.length)%regions.length;if(manual)pauseRotation();updateRegion(true)}
-      function startRotation(){if(reducedMotion||rotationPaused||rotation)return;rotation=setInterval(function(){chooseRegion(1,false)},18000)}
+      function startRotation(){if(reducedMotion||rotationPaused||rotation)return;rotation=setInterval(function(){chooseRegion(1,false)},9000)}
       updateRegion(false);
       function stamp(value){return new Date(value*1000).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
-      function tile(frame){return L.tileLayer('https://tilecache.rainviewer.com'+frame.path+'/256/{z}/{x}/{y}/2/1_1.png',{tileSize:256,opacity:0,attribution:'Weather radar by <a href="https://www.rainviewer.com/" target="_blank" rel="noopener">RainViewer</a>'})}
+      function tile(frame){return L.tileLayer('https://api.librewxr.net'+frame.path+'/256/{z}/{x}/{y}/10/1_1.png',{tileSize:256,opacity:0,maxZoom:12,attribution:'Global precipitation by <a href="https://librewxr.net/" target="_blank" rel="noopener">LibreWXR</a> · radar where available, models elsewhere'})}
       function render(){
         if(!frames.length)return;
         const position=Math.max(0,Math.min(frames.length-1,Number(slider.value)));
@@ -88,7 +88,8 @@
         if(!lowLayer||lowLayer._path!==frames[low].path){if(lowLayer)radar.removeLayer(lowLayer);lowLayer=tile(frames[low]);lowLayer._path=frames[low].path;radar.addLayer(lowLayer)}
         if(!highLayer||highLayer._path!==frames[high].path){if(highLayer)radar.removeLayer(highLayer);highLayer=tile(frames[high]);highLayer._path=frames[high].path;radar.addLayer(highLayer)}
         lowLayer.setOpacity(.78*(1-fraction));highLayer.setOpacity(high===low?0:.78*fraction);
-        time.textContent=stamp(frames[Math.round(position)].time)+' · observed radar';
+        const frame=frames[Math.round(position)];
+        time.textContent=stamp(frame.time)+(frame.kind==='predicted'?' · predicted precipitation':' · recent precipitation blend');
       }
       function stop(){if(animation)cancelAnimationFrame(animation);animation=null;previous=null;play.textContent='Play';play.setAttribute('aria-pressed','false')}
       function animate(now){if(!previous)previous=now;const elapsed=Math.min(.1,(now-previous)/1000);previous=now;let next=Number(slider.value)+elapsed*.75;if(next>Number(slider.max))next=Number(slider.min);slider.value=next.toFixed(2);render();animation=requestAnimationFrame(animate)}
@@ -99,11 +100,13 @@
       regionNext.addEventListener('click',function(){chooseRegion(1,true)});
       map.on('dragstart',pauseRotation);
       document.addEventListener('visibilitychange',function(){if(document.hidden){if(rotation)clearInterval(rotation);rotation=null}else startRotation()});
-      fetch('https://api.rainviewer.com/public/weather-maps.json').then(function(response){if(!response.ok)throw new Error('Radar unavailable');return response.json()}).then(function(data){
-        frames=(data.radar&&data.radar.past)||[];if(!frames.length)throw new Error('No radar frames');
-        slider.max=String(frames.length-1);slider.value=slider.max;status.textContent=frames.length+' live observed frames';render();
+      fetch('https://api.librewxr.net/public/weather-maps.json').then(function(response){if(!response.ok)throw new Error('Precipitation unavailable');return response.json()}).then(function(data){
+        const recent=((data.radar&&data.radar.past)||[]).map(function(frame){return Object.assign({kind:'recent'},frame)});
+        const predicted=((data.radar&&data.radar.nowcast)||[]).map(function(frame){return Object.assign({kind:'predicted'},frame)});
+        frames=recent.concat(predicted);if(!frames.length)throw new Error('No precipitation frames');
+        slider.max=String(frames.length-1);slider.value=slider.max;status.textContent=recent.length+' recent + '+predicted.length+' predicted frames';render();
         if(!reducedMotion){start();startRotation()}else stop();
-      }).catch(function(){error.style.display='grid';status.textContent='Radar unavailable'});
+      }).catch(function(){error.style.display='grid';status.textContent='Precipitation unavailable'});
     }());
   </script>
 </body>
