@@ -32,3 +32,10 @@
 @media(prefers-reduced-motion:reduce){.home-v4 *{scroll-behavior:auto!important}.home-v4 [data-reveal]{transform:none;transition:none}.fap-hero-lines span,.fap-decision-path:before,.fap-orbit-glow,.fap-orbit-rings ellipse,.fap-orbit-node circle,.fap-orbit-traveler{animation:none!important}}
 .fap-decision-path li>span{font-size:.76rem}.fap-orbit-node text{font-size:16px}.fap-orbit-node .fap-node-note{fill:#a5b5ac;font-size:12.5px;letter-spacing:.025em}.fap-model-caption,.fap-footer-bottom{font-size:.8rem}.fap-work-row a,.fap-arrow-link,.fap-trust-grid a,.fap-program-list details>div a{font-size:.9rem}
 @media(max-width:620px){.fap-program-list summary em{font-size:.78rem}.fap-orbit-node text{font-size:13px}}
+
+/* Lock critical contrast against the legacy site stylesheet. */
+.home-v4 .fap-hero h1{color:#fff}
+.home-v4 .fap-button-primary{color:var(--fap-ink)}
+.home-v4 .fap-button-secondary{color:#fff}
+.home-v4 .fap-button-dark{color:#fff}
+.home-v4 .fap-button-outline{color:var(--fap-ink)}
