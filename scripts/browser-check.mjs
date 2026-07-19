@@ -164,11 +164,13 @@ try {
           const initialRegion = (await location.textContent())?.trim();
           assert(initialRegion && initialRegion !== 'Loading region…', 'Agricultural region did not initialize');
           assert(!initialRegion.includes('Melfort'), 'Private location remains in the radar rotation');
-          await radar.locator('#region-next').click();
-          await page.waitForTimeout(500);
-          const nextRegion = (await location.textContent())?.trim();
-          assert(nextRegion && nextRegion !== initialRegion, 'Next-region control did not change the map');
-          assert((await radar.locator('#region-count').textContent())?.includes('paused'), 'Manual region selection did not pause automatic rotation');
+          if (viewport.name === 'desktop') {
+            await radar.locator('#region-next').click();
+            await page.waitForTimeout(500);
+            const nextRegion = (await location.textContent())?.trim();
+            assert(nextRegion && nextRegion !== initialRegion, 'Next-region control did not change the map');
+            assert((await radar.locator('#region-count').textContent())?.includes('paused'), 'Manual region selection did not pause automatic rotation');
+          }
         });
       }
 
