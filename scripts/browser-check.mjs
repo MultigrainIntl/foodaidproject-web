@@ -151,7 +151,16 @@ try {
           const radar = page.frameLocator('iframe[title="Live GISit global precipitation across agricultural regions"]');
           const location = radar.locator('#radar-location');
           await location.waitFor();
-          await radar.locator('#radar-status', { hasText: 'recent' }).waitFor({ timeout: 10000 });
+          const status = radar.locator('#radar-status');
+          await status.waitFor({ state: 'attached' });
+          let statusText = '';
+          const statusDeadline = Date.now() + 10000;
+          while (Date.now() < statusDeadline) {
+            statusText = (await status.textContent())?.trim() || '';
+            if (statusText.includes('recent')) break;
+            await page.waitForTimeout(250);
+          }
+          assert(statusText.includes('recent'), `Precipitation frames did not load: ${statusText || 'no status'}`);
           const initialRegion = (await location.textContent())?.trim();
           assert(initialRegion && initialRegion !== 'Loading region…', 'Agricultural region did not initialize');
           assert(!initialRegion.includes('Melfort'), 'Private location remains in the radar rotation');
