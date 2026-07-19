@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>GISit live radar preview</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root{color-scheme:dark;--ink:#07120e;--panel:rgba(7,18,14,.88);--line:rgba(255,255,255,.2);--orange:#f47b20;--cream:#f5f0e7;--muted:#afbeb5;font-family:Arial,sans-serif}
+    *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--ink);color:var(--cream)}
+    .radar{position:relative;height:100%;min-height:430px;overflow:hidden}.map{position:absolute;inset:0;background:#102019}.map:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,18,14,.08),rgba(7,18,14,.38))}
+    .top,.bottom{position:absolute;z-index:500;left:20px;right:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);box-shadow:0 18px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px)}
+    .top{top:20px}.bottom{bottom:20px}.label{margin:0 0 3px;color:var(--orange);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.location{font-size:16px;font-weight:600}.status,.source{color:var(--muted);font-size:12px}.time{font-size:14px;font-weight:600}.controls{display:flex;align-items:center;gap:12px}.play{min-width:74px;padding:9px 13px;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--cream);font:600 12px Arial,sans-serif;cursor:pointer}.play:hover,.play:focus-visible{border-color:var(--orange);color:var(--orange)}
+    input[type=range]{width:min(38vw,360px);accent-color:var(--orange)}a{color:var(--cream);text-underline-offset:4px}.error{position:absolute;z-index:600;inset:0;display:none;place-items:center;padding:30px;text-align:center;background:var(--ink)}
+    .leaflet-control-attribution{background:rgba(7,18,14,.74)!important;color:#b8c3bc!important}.leaflet-control-attribution a{color:#fff!important}
+    @media(max-width:620px){.radar{min-height:400px}.top,.bottom{left:10px;right:10px;padding:12px}.top{top:10px}.bottom{bottom:10px;align-items:flex-start;flex-direction:column}.controls{width:100%}input[type=range]{width:100%}.source{display:none}}
+  </style>
+</head>
+<body>
+  <main class="radar" aria-label="Live observed weather radar centered on Melfort, Saskatchewan">
+    <div class="map" id="radar-map" role="img" aria-label="Animated live observed radar map"></div>
+    <div class="top">
+      <div><p class="label">GISit working capability</p><div class="location">Melfort, Saskatchewan</div></div>
+      <div class="status" id="radar-status">Connecting to live radar…</div>
+    </div>
+    <div class="bottom">
+      <div><div class="time" id="radar-time">Latest observed radar</div><div class="source">Live observed frames · RainViewer · Esri basemap</div></div>
+      <div class="controls">
+        <button class="play" id="radar-play" type="button" aria-pressed="false">Pause</button>
+        <input id="radar-slider" type="range" min="0" max="12" step="0.01" value="12" aria-label="Observed radar time">
+      </div>
+    </div>
+    <div class="error" id="radar-error">Live radar is temporarily unavailable. <a href="https://weather.gisit.com" target="_blank" rel="noopener">Open GISit Weather</a>.</div>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function(){
+      const status=document.getElementById('radar-status');
+      const time=document.getElementById('radar-time');
+      const slider=document.getElementById('radar-slider');
+      const play=document.getElementById('radar-play');
+      const error=document.getElementById('radar-error');
+      let frames=[],lowLayer=null,highLayer=null,animation=null,previous=null;
+      if(!window.L){error.style.display='grid';return}
+      const map=L.map('radar-map',{center:[52.86084,-104.614296],zoom:6,zoomControl:false,attributionControl:true,dragging:true,scrollWheelZoom:false,preferCanvas:true});
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Esri'}).addTo(map);
+      const radar=L.layerGroup().addTo(map);
+      function stamp(value){return new Date(value*1000).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+      function tile(frame){return L.tileLayer('https://tilecache.rainviewer.com'+frame.path+'/256/{z}/{x}/{y}/2/1_1.png',{tileSize:256,opacity:0,attribution:'RainViewer'})}
+      function render(){
+        if(!frames.length)return;
+        const position=Math.max(0,Math.min(frames.length-1,Number(slider.value)));
+        const low=Math.floor(position),high=Math.min(frames.length-1,Math.ceil(position)),fraction=position-low;
+        if(!lowLayer||lowLayer._path!==frames[low].path){if(lowLayer)radar.removeLayer(lowLayer);lowLayer=tile(frames[low]);lowLayer._path=frames[low].path;radar.addLayer(lowLayer)}
+        if(!highLayer||highLayer._path!==frames[high].path){if(highLayer)radar.removeLayer(highLayer);highLayer=tile(frames[high]);highLayer._path=frames[high].path;radar.addLayer(highLayer)}
+        lowLayer.setOpacity(.78*(1-fraction));highLayer.setOpacity(high===low?0:.78*fraction);
+        time.textContent=stamp(frames[Math.round(position)].time)+' · observed radar';
+      }
+      function stop(){if(animation)cancelAnimationFrame(animation);animation=null;previous=null;play.textContent='Play';play.setAttribute('aria-pressed','false')}
+      function animate(now){if(!previous)previous=now;const elapsed=Math.min(.1,(now-previous)/1000);previous=now;let next=Number(slider.value)+elapsed*.75;if(next>Number(slider.max))next=Number(slider.min);slider.value=next.toFixed(2);render();animation=requestAnimationFrame(animate)}
+      function start(){if(animation||!frames.length)return;play.textContent='Pause';play.setAttribute('aria-pressed','true');animation=requestAnimationFrame(animate)}
+      slider.addEventListener('input',function(){render()});
+      play.addEventListener('click',function(){animation?stop():start()});
+      fetch('https://api.rainviewer.com/public/weather-maps.json').then(function(response){if(!response.ok)throw new Error('Radar unavailable');return response.json()}).then(function(data){
+        frames=(data.radar&&data.radar.past)||[];if(!frames.length)throw new Error('No radar frames');
+        slider.max=String(frames.length-1);slider.value=slider.max;status.textContent=frames.length+' live observed frames';render();
+        if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)start();else stop();
+      }).catch(function(){error.style.display='grid';status.textContent='Radar unavailable'});
+    }());
+  </script>
+</body>
+</html>
