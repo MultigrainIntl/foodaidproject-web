@@ -11,18 +11,25 @@
     *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--ink);color:var(--cream)}
     .radar{position:relative;height:100%;min-height:430px;overflow:hidden}.map{position:absolute;inset:0;background:#102019}.map:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,18,14,.08),rgba(7,18,14,.38))}
     .top,.bottom{position:absolute;z-index:500;left:20px;right:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);box-shadow:0 18px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px)}
-    .top{top:20px}.bottom{bottom:20px}.label{margin:0 0 3px;color:var(--orange);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.location{font-size:16px;font-weight:600}.status,.source{color:var(--muted);font-size:12px}.time{font-size:14px;font-weight:600}.controls{display:flex;align-items:center;gap:12px}.play{min-width:74px;padding:9px 13px;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--cream);font:600 12px Arial,sans-serif;cursor:pointer}.play:hover,.play:focus-visible{border-color:var(--orange);color:var(--orange)}
+    .top{top:20px}.bottom{bottom:20px}.label{margin:0 0 3px;color:var(--orange);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.location{font-size:16px;font-weight:600}.status,.source{color:var(--muted);font-size:12px}.time{font-size:14px;font-weight:600}.controls,.region-controls{display:flex;align-items:center;gap:12px}.region-panel{display:grid;justify-items:end;gap:7px}.region-controls{gap:7px}.region-controls button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--cream);font:600 15px Arial,sans-serif;cursor:pointer}.region-controls button:hover,.region-controls button:focus-visible{border-color:var(--orange);color:var(--orange)}.region-count{min-width:78px;color:var(--muted);font-size:11px;text-align:center;letter-spacing:.04em}.play{min-width:74px;padding:9px 13px;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--cream);font:600 12px Arial,sans-serif;cursor:pointer}.play:hover,.play:focus-visible{border-color:var(--orange);color:var(--orange)}
     input[type=range]{width:min(38vw,360px);accent-color:var(--orange)}a{color:var(--cream);text-underline-offset:4px}.error{position:absolute;z-index:600;inset:0;display:none;place-items:center;padding:30px;text-align:center;background:var(--ink)}
     .leaflet-control-attribution{background:rgba(7,18,14,.74)!important;color:#b8c3bc!important}.leaflet-control-attribution a{color:#fff!important}
-    @media(max-width:620px){.radar{min-height:400px}.top,.bottom{left:10px;right:10px;padding:12px}.top{top:10px}.bottom{bottom:10px;align-items:flex-start;flex-direction:column}.controls{width:100%}input[type=range]{width:100%}.source{display:none}}
+    @media(max-width:620px){.radar{min-height:400px}.top,.bottom{left:10px;right:10px;padding:12px}.top{top:10px;align-items:flex-start}.top .status{display:none}.bottom{bottom:10px;align-items:flex-start;flex-direction:column}.controls{width:100%}.region-panel{flex:0 0 auto}input[type=range]{width:100%}.source{display:none}}
   </style>
 </head>
 <body>
-  <main class="radar" aria-label="Live observed weather radar centered on Melfort, Saskatchewan">
+  <main class="radar" aria-label="Live observed weather radar across global agricultural regions">
     <div class="map" id="radar-map" role="img" aria-label="Animated live observed radar map"></div>
     <div class="top">
-      <div><p class="label">GISit working capability</p><div class="location">Melfort, Saskatchewan</div></div>
-      <div class="status" id="radar-status">Connecting to live radar…</div>
+      <div><p class="label">Global agricultural radar</p><div class="location" id="radar-location">Loading region…</div></div>
+      <div class="region-panel">
+        <div class="status" id="radar-status">Connecting to live radar…</div>
+        <div class="region-controls" aria-label="Agricultural region controls">
+          <button id="region-prev" type="button" aria-label="Previous agricultural region">←</button>
+          <span class="region-count" id="region-count" aria-live="polite"></span>
+          <button id="region-next" type="button" aria-label="Next agricultural region">→</button>
+        </div>
+      </div>
     </div>
     <div class="bottom">
       <div><div class="time" id="radar-time">Latest observed radar</div><div class="source">Live observed frames · RainViewer · Esri basemap</div></div>
@@ -41,13 +48,38 @@
       const slider=document.getElementById('radar-slider');
       const play=document.getElementById('radar-play');
       const error=document.getElementById('radar-error');
-      let frames=[],lowLayer=null,highLayer=null,animation=null,previous=null;
+      const regions=[
+        {name:'North American Great Plains',center:[40.3,-99.4],zoom:5},
+        {name:'Canadian Prairies',center:[51.2,-106.5],zoom:5},
+        {name:'Brazilian agricultural heartland',center:[-16.2,-52.4],zoom:5},
+        {name:'Argentine Pampas',center:[-35.2,-61.4],zoom:5},
+        {name:'Indo-Gangetic Plain',center:[27.3,78.4],zoom:5},
+        {name:'Australian Wheatbelt',center:[-32.1,117.2],zoom:5},
+        {name:'South African grain region',center:[-27.2,27.0],zoom:5}
+      ];
+      const location=document.getElementById('radar-location');
+      const regionCount=document.getElementById('region-count');
+      const regionPrev=document.getElementById('region-prev');
+      const regionNext=document.getElementById('region-next');
+      const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let frames=[],lowLayer=null,highLayer=null,animation=null,previous=null,rotation=null,rotationPaused=false;
+      let regionIndex=Math.floor(Date.now()/180000)%regions.length;
       if(!window.L){error.style.display='grid';return}
-      const map=L.map('radar-map',{center:[52.86084,-104.614296],zoom:6,zoomControl:false,attributionControl:true,dragging:true,scrollWheelZoom:false,preferCanvas:true});
+      const map=L.map('radar-map',{center:regions[regionIndex].center,zoom:regions[regionIndex].zoom,zoomControl:false,attributionControl:true,dragging:true,scrollWheelZoom:false,preferCanvas:true});
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Esri'}).addTo(map);
       const radar=L.layerGroup().addTo(map);
+      function updateRegion(manual){
+        const region=regions[regionIndex];
+        location.textContent=region.name;
+        regionCount.textContent=(regionIndex+1)+' / '+regions.length+(rotationPaused?' · paused':'');
+        if(manual)map.flyTo(region.center,region.zoom,{duration:reducedMotion?0:2.4,easeLinearity:.22});
+      }
+      function pauseRotation(){rotationPaused=true;if(rotation)clearInterval(rotation);rotation=null;updateRegion(false)}
+      function chooseRegion(step,manual){regionIndex=(regionIndex+step+regions.length)%regions.length;if(manual)pauseRotation();updateRegion(true)}
+      function startRotation(){if(reducedMotion||rotationPaused||rotation)return;rotation=setInterval(function(){chooseRegion(1,false)},18000)}
+      updateRegion(false);
       function stamp(value){return new Date(value*1000).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
-      function tile(frame){return L.tileLayer('https://tilecache.rainviewer.com'+frame.path+'/256/{z}/{x}/{y}/2/1_1.png',{tileSize:256,opacity:0,attribution:'RainViewer'})}
+      function tile(frame){return L.tileLayer('https://tilecache.rainviewer.com'+frame.path+'/256/{z}/{x}/{y}/2/1_1.png',{tileSize:256,opacity:0,attribution:'Weather radar by <a href="https://www.rainviewer.com/" target="_blank" rel="noopener">RainViewer</a>'})}
       function render(){
         if(!frames.length)return;
         const position=Math.max(0,Math.min(frames.length-1,Number(slider.value)));
@@ -62,10 +94,14 @@
       function start(){if(animation||!frames.length)return;play.textContent='Pause';play.setAttribute('aria-pressed','true');animation=requestAnimationFrame(animate)}
       slider.addEventListener('input',function(){render()});
       play.addEventListener('click',function(){animation?stop():start()});
+      regionPrev.addEventListener('click',function(){chooseRegion(-1,true)});
+      regionNext.addEventListener('click',function(){chooseRegion(1,true)});
+      map.on('dragstart',pauseRotation);
+      document.addEventListener('visibilitychange',function(){if(document.hidden){if(rotation)clearInterval(rotation);rotation=null}else startRotation()});
       fetch('https://api.rainviewer.com/public/weather-maps.json').then(function(response){if(!response.ok)throw new Error('Radar unavailable');return response.json()}).then(function(data){
         frames=(data.radar&&data.radar.past)||[];if(!frames.length)throw new Error('No radar frames');
         slider.max=String(frames.length-1);slider.value=slider.max;status.textContent=frames.length+' live observed frames';render();
-        if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)start();else stop();
+        if(!reducedMotion){start();startRotation()}else stop();
       }).catch(function(){error.style.display='grid';status.textContent='Radar unavailable'});
     }());
   </script>

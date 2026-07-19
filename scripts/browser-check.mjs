@@ -146,6 +146,22 @@ try {
         assert(browserErrors.length === 0, browserErrors.join(' | '));
       });
 
+      if (route.slug === 'homepage') {
+        await check(`${scope} global agricultural radar`, async () => {
+          const radar = page.frameLocator('iframe[title="Live GISit observed radar across global agricultural regions"]');
+          const location = radar.locator('#radar-location');
+          await location.waitFor();
+          const initialRegion = (await location.textContent())?.trim();
+          assert(initialRegion && initialRegion !== 'Loading region…', 'Agricultural region did not initialize');
+          assert(!initialRegion.includes('Melfort'), 'Private location remains in the radar rotation');
+          await radar.locator('#region-next').click();
+          await page.waitForTimeout(500);
+          const nextRegion = (await location.textContent())?.trim();
+          assert(nextRegion && nextRegion !== initialRegion, 'Next-region control did not change the map');
+          assert((await radar.locator('#region-count').textContent())?.includes('paused'), 'Manual region selection did not pause automatic rotation');
+        });
+      }
+
       await check(`${scope} screenshot`, async () => {
         await page.screenshot({ path: `${screenshotDir}/${route.slug}-${viewport.name}.png`, fullPage: true });
       });
