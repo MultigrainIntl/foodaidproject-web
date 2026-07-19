@@ -70,7 +70,7 @@ def main() -> int:
             check_javascript(script, f"{path.name}: inline script {number}", failures)
 
     required = {
-        "index.html": ["/service-corps.html", "/privacy.html", "Skills for Food Security Service Corps"],
+        "index.html": ["service-corps.html", "privacy.html", "Skills for Food Security Service Corps"],
         "service-corps.html": [
             'id="intake-form"',
             'name="serviceFormat" value="Remote"',
