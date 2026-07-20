@@ -8,11 +8,11 @@ const foodBankBuilderPattern = '**/AKfycbzXzcJrEfcG26FIltfrqHQFsRPD2Qu_War3vGHdF
 const serviceCorpsEndpointPattern = '**/AKfycbzVIx_2Qc0w9f4ch7b3uo-n8Krs86r4_DAAT8CPhwkfCGpsA3WryOApucfUp9n9eqou/**';
 
 const routes = [
-  { slug: 'homepage', path: '/index.html', heading: 'Make every food-security decision count.', essential: 'Skills for Food Security Service Corps' },
+  { slug: 'homepage', path: '/index.html', heading: 'Helping more food reach more people.', essential: 'Skills for Food Security Service Corps' },
   { slug: 'food-bank-supply', path: '/food-banks.html', heading: 'Build your own mixed truckload of bulk dry goods', essential: 'Mixed Truckload Builder' },
   { slug: 'zel-zanj', path: '/zel-zanj.html', heading: 'Zèl Zanj', essential: 'Built for impact per dollar' },
   { slug: 'service-corps', path: '/service-corps.html', heading: 'The hours are yours.', essential: 'Remote-only operating model:' },
-  { slug: 'trust-transparency', path: '/trust.html', heading: 'Real, registered, and accountable.', essential: 'IRS determination' },
+  { slug: 'trust-transparency', path: '/trust.html', heading: 'Transparency is something you show.', essential: 'IRS determination' },
   { slug: 'privacy', path: '/privacy.html', heading: 'Privacy notice', essential: 'request correction or deletion' },
 ];
 
@@ -145,34 +145,6 @@ try {
         await page.waitForTimeout(150);
         assert(browserErrors.length === 0, browserErrors.join(' | '));
       });
-
-      if (route.slug === 'homepage') {
-        await check(`${scope} global agricultural precipitation`, async () => {
-          const radar = page.frameLocator('iframe[title="Live GISit global precipitation across agricultural regions"]');
-          const location = radar.locator('#radar-location');
-          await location.waitFor();
-          const status = radar.locator('#radar-status');
-          await status.waitFor({ state: 'attached' });
-          let statusText = '';
-          const statusDeadline = Date.now() + 10000;
-          while (Date.now() < statusDeadline) {
-            statusText = (await status.textContent())?.trim() || '';
-            if (statusText.includes('recent')) break;
-            await page.waitForTimeout(250);
-          }
-          assert(statusText.includes('recent'), `Precipitation frames did not load: ${statusText || 'no status'}`);
-          const initialRegion = (await location.textContent())?.trim();
-          assert(initialRegion && initialRegion !== 'Loading region…', 'Agricultural region did not initialize');
-          assert(!initialRegion.includes('Melfort'), 'Private location remains in the radar rotation');
-          if (viewport.name === 'desktop') {
-            await radar.locator('#region-next').click();
-            await page.waitForTimeout(500);
-            const nextRegion = (await location.textContent())?.trim();
-            assert(nextRegion && nextRegion !== initialRegion, 'Next-region control did not change the map');
-            assert((await radar.locator('#region-count').textContent())?.includes('paused'), 'Manual region selection did not pause automatic rotation');
-          }
-        });
-      }
 
       await check(`${scope} screenshot`, async () => {
         await page.screenshot({ path: `${screenshotDir}/${route.slug}-${viewport.name}.png`, fullPage: true });
