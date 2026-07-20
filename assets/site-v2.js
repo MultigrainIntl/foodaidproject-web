@@ -1,5 +1,5 @@
 (function(){
-  var standardNav=document.getElementById('nav');
+  var standardNav=document.getElementById('nav')||document.querySelector('.site-header nav[id]');
   if(standardNav){
     standardNav.innerHTML='<ul>'+
       '<li><a href="work.html">Our work</a></li>'+
