@@ -1,0 +1,113 @@
+<!doctype html>
+<!-- Candidate preview: global agricultural-region radar rotation. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>GISit global precipitation preview</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root{color-scheme:dark;--ink:#07120e;--panel:rgba(7,18,14,.88);--line:rgba(255,255,255,.2);--orange:#f47b20;--cream:#f5f0e7;--muted:#afbeb5;font-family:Arial,sans-serif}
+    *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--ink);color:var(--cream)}
+    .radar{position:relative;height:100%;min-height:430px;overflow:hidden}.map{position:absolute;inset:0;background:#102019}.map:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,18,14,.08),rgba(7,18,14,.38))}
+    .top,.bottom{position:absolute;z-index:500;left:20px;right:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid var(--line);background:var(--panel);box-shadow:0 18px 50px rgba(0,0,0,.25);backdrop-filter:blur(12px)}
+    .top{top:20px}.bottom{bottom:20px}.label{margin:0 0 3px;color:var(--orange);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.location{font-size:16px;font-weight:600}.status,.source{color:var(--muted);font-size:12px}.time{font-size:14px;font-weight:600}.controls,.region-controls{display:flex;align-items:center;gap:12px}.region-panel{display:grid;justify-items:end;gap:7px}.region-controls{gap:7px}.region-controls button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--cream);font:600 15px Arial,sans-serif;cursor:pointer}.region-controls button:hover,.region-controls button:focus-visible{border-color:var(--orange);color:var(--orange)}.region-count{min-width:78px;color:var(--muted);font-size:11px;text-align:center;letter-spacing:.04em}.play{min-width:74px;padding:9px 13px;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--cream);font:600 12px Arial,sans-serif;cursor:pointer}.play:hover,.play:focus-visible{border-color:var(--orange);color:var(--orange)}
+    input[type=range]{width:min(38vw,360px);accent-color:var(--orange)}a{color:var(--cream);text-underline-offset:4px}.error{position:absolute;z-index:600;inset:0;display:none;place-items:center;padding:30px;text-align:center;background:var(--ink)}
+    .leaflet-control-attribution{background:rgba(7,18,14,.74)!important;color:#b8c3bc!important}.leaflet-control-attribution a{color:#fff!important}
+    @media(max-width:620px){.radar{min-height:400px}.top,.bottom{left:10px;right:10px;padding:12px}.top{top:10px;align-items:flex-start}.top .status{display:none}.bottom{bottom:10px;align-items:flex-start;flex-direction:column}.controls{width:100%}.region-panel{flex:0 0 auto}input[type=range]{width:100%}.source{display:none}}
+  </style>
+</head>
+<body>
+  <main class="radar" aria-label="Live global precipitation across agricultural regions">
+    <div class="map" id="radar-map" role="img" aria-label="Animated global precipitation map"></div>
+    <div class="top">
+      <div><p class="label">Global agricultural precipitation</p><div class="location" id="radar-location">Loading region…</div></div>
+      <div class="region-panel">
+        <div class="status" id="radar-status">Connecting to global precipitation…</div>
+        <div class="region-controls" aria-label="Agricultural region controls">
+          <button id="region-prev" type="button" aria-label="Previous agricultural region">←</button>
+          <span class="region-count" id="region-count" aria-live="polite"></span>
+          <button id="region-next" type="button" aria-label="Next agricultural region">→</button>
+        </div>
+      </div>
+    </div>
+    <div class="bottom">
+      <div><div class="time" id="radar-time">Latest precipitation frame</div><div class="source">Radar where available · modeled coverage elsewhere · Esri basemap</div></div>
+      <div class="controls">
+        <button class="play" id="radar-play" type="button" aria-pressed="false">Pause</button>
+        <input id="radar-slider" type="range" min="0" max="12" step="0.01" value="12" aria-label="Observed radar time">
+      </div>
+    </div>
+    <div class="error" id="radar-error">Global precipitation is temporarily unavailable. <a href="https://weather.gisit.com" target="_blank" rel="noopener">Open GISit Weather</a>.</div>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    (function(){
+      const status=document.getElementById('radar-status');
+      const time=document.getElementById('radar-time');
+      const slider=document.getElementById('radar-slider');
+      const play=document.getElementById('radar-play');
+      const error=document.getElementById('radar-error');
+      const regions=[
+        {name:'North American Great Plains',center:[40.3,-99.4],zoom:5},
+        {name:'Canadian Prairies',center:[51.2,-106.5],zoom:5},
+        {name:'Brazilian agricultural heartland',center:[-16.2,-52.4],zoom:5},
+        {name:'Argentine Pampas',center:[-35.2,-61.4],zoom:5},
+        {name:'Indo-Gangetic Plain',center:[27.3,78.4],zoom:5},
+        {name:'Australian Wheatbelt',center:[-32.1,117.2],zoom:5},
+        {name:'South African grain region',center:[-27.2,27.0],zoom:5}
+      ];
+      const location=document.getElementById('radar-location');
+      const regionCount=document.getElementById('region-count');
+      const regionPrev=document.getElementById('region-prev');
+      const regionNext=document.getElementById('region-next');
+      const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let frames=[],lowLayer=null,highLayer=null,animation=null,previous=null,rotation=null,rotationPaused=false;
+      let regionIndex=Math.floor(Date.now()/180000)%regions.length;
+      if(!window.L){error.style.display='grid';return}
+      const map=L.map('radar-map',{center:regions[regionIndex].center,zoom:regions[regionIndex].zoom,zoomControl:false,attributionControl:true,dragging:true,scrollWheelZoom:false,preferCanvas:true});
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Esri'}).addTo(map);
+      const radar=L.layerGroup().addTo(map);
+      function updateRegion(manual){
+        const region=regions[regionIndex];
+        location.textContent=region.name;
+        regionCount.textContent=(regionIndex+1)+' / '+regions.length+(rotationPaused?' · paused':'');
+        if(manual)map.flyTo(region.center,region.zoom,{duration:reducedMotion?0:2.4,easeLinearity:.22});
+      }
+      function pauseRotation(){rotationPaused=true;if(rotation)clearInterval(rotation);rotation=null;updateRegion(false)}
+      function chooseRegion(step,manual){regionIndex=(regionIndex+step+regions.length)%regions.length;if(manual)pauseRotation();updateRegion(true)}
+      function startRotation(){if(reducedMotion||rotationPaused||rotation)return;rotation=setInterval(function(){chooseRegion(1,false)},9000)}
+      updateRegion(false);
+      function stamp(value){return new Date(value*1000).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+      function tile(frame){return L.tileLayer('https://api.librewxr.net'+frame.path+'/256/{z}/{x}/{y}/10/1_1.png',{tileSize:256,opacity:0,maxZoom:12,attribution:'Global precipitation by <a href="https://librewxr.net/" target="_blank" rel="noopener">LibreWXR</a> · radar where available, models elsewhere'})}
+      function render(){
+        if(!frames.length)return;
+        const position=Math.max(0,Math.min(frames.length-1,Number(slider.value)));
+        const low=Math.floor(position),high=Math.min(frames.length-1,Math.ceil(position)),fraction=position-low;
+        if(!lowLayer||lowLayer._path!==frames[low].path){if(lowLayer)radar.removeLayer(lowLayer);lowLayer=tile(frames[low]);lowLayer._path=frames[low].path;radar.addLayer(lowLayer)}
+        if(!highLayer||highLayer._path!==frames[high].path){if(highLayer)radar.removeLayer(highLayer);highLayer=tile(frames[high]);highLayer._path=frames[high].path;radar.addLayer(highLayer)}
+        lowLayer.setOpacity(.78*(1-fraction));highLayer.setOpacity(high===low?0:.78*fraction);
+        const frame=frames[Math.round(position)];
+        time.textContent=stamp(frame.time)+(frame.kind==='predicted'?' · predicted precipitation':' · recent precipitation blend');
+      }
+      function stop(){if(animation)cancelAnimationFrame(animation);animation=null;previous=null;play.textContent='Play';play.setAttribute('aria-pressed','false')}
+      function animate(now){if(!previous)previous=now;const elapsed=Math.min(.1,(now-previous)/1000);previous=now;let next=Number(slider.value)+elapsed*.75;if(next>Number(slider.max))next=Number(slider.min);slider.value=next.toFixed(2);render();animation=requestAnimationFrame(animate)}
+      function start(){if(animation||!frames.length)return;play.textContent='Pause';play.setAttribute('aria-pressed','true');animation=requestAnimationFrame(animate)}
+      slider.addEventListener('input',function(){render()});
+      play.addEventListener('click',function(){animation?stop():start()});
+      regionPrev.addEventListener('click',function(){chooseRegion(-1,true)});
+      regionNext.addEventListener('click',function(){chooseRegion(1,true)});
+      map.on('dragstart',pauseRotation);
+      document.addEventListener('visibilitychange',function(){if(document.hidden){if(rotation)clearInterval(rotation);rotation=null}else startRotation()});
+      fetch('https://api.librewxr.net/public/weather-maps.json').then(function(response){if(!response.ok)throw new Error('Precipitation unavailable');return response.json()}).then(function(data){
+        const recent=((data.radar&&data.radar.past)||[]).map(function(frame){return Object.assign({kind:'recent'},frame)});
+        const predicted=((data.radar&&data.radar.nowcast)||[]).map(function(frame){return Object.assign({kind:'predicted'},frame)});
+        frames=recent.concat(predicted);if(!frames.length)throw new Error('No precipitation frames');
+        slider.max=String(frames.length-1);slider.value=slider.max;status.textContent=recent.length+' recent + '+predicted.length+' predicted frames';render();
+        if(!reducedMotion){start();startRotation()}else stop();
+      }).catch(function(){error.style.display='grid';status.textContent='Precipitation unavailable'});
+    }());
+  </script>
+</body>
+</html>
