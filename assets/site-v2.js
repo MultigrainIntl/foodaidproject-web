@@ -5,7 +5,7 @@
       '<li><a href="work.html">Our work</a></li>'+
       '<li><a href="technology.html">Technology</a></li>'+
       '<li><a href="service-corps.html">Service Corps</a></li>'+
-      '<li><a href="evidence.html">Evidence</a></li>'+
+      '<li><a href="evidence.html">Progress</a></li>'+
       '<li><a href="about.html">About</a></li>'+
       '<li><a href="partners.html">Partner</a></li>'+
       '<li><a class="btn btn-dark" href="https://www.every.org/food-aid-project#/donate">Donate</a></li>'+
