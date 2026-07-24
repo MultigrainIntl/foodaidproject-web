@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Contact — Food Aid Project</title>
-  <meta name="description" content="Contact Food Aid Project about food access, logistics, research, technology, funding, volunteering or partnership.">
+  <meta name="description" content="Contact Food Aid Project to ask for help, offer expertise, explore a partnership, support the work or join the Service Corps.">
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="assets/site-v2.css">
   <link rel="stylesheet" href="assets/site-v3.css">
@@ -22,43 +22,44 @@
   </header>
   <main id="main">
     <section class="page-hero"><div class="wrap">
-      <p class="eyebrow">Start a conversation</p>
-      <h1>Tell us what you are trying to accomplish.</h1>
-      <p class="lede">Start with the real constraint. We will route your inquiry to the right Food Aid Project pathway—or tell you plainly when it is outside our current capacity.</p>
+      <p class="eyebrow">Contact Food Aid Project</p>
+      <h1>Let’s start a conversation.</h1>
+      <p class="lede">Ask for help, bring us a challenge, offer your experience or explore what we could build together. You do not need a finished proposal—just tell us what matters and how you would like to be involved.</p>
     </div></section>
     <section class="section"><div class="wrap split">
       <div>
-        <p class="eyebrow">Contact Food Aid Project</p>
-        <h2>What brings you here?</h2>
+        <p class="eyebrow">Send us a message</p>
+        <h2>How can we help each other?</h2>
         <form class="contact-form" id="contact-form">
           <div class="form-grid">
             <label>Name<input id="contact-name" name="name" autocomplete="name" required></label>
             <label>Email<input id="contact-email" name="email" type="email" autocomplete="email" required></label>
-            <label class="full">I am contacting you about
+            <label class="full">What would you like to discuss?
               <select id="contact-route" name="route" required>
                 <option value="">Select one</option>
-                <option>Food-bank access or the truckload builder</option>
+                <option>Help with food access, sourcing or logistics</option>
                 <option>International food distribution or Zèl Zanj</option>
-                <option>Technology, GIS, weather or research</option>
-                <option>Funding or foundation partnership</option>
+                <option>Technology, GIS, weather or research collaboration</option>
+                <option>Funding, sponsorship or foundation partnership</option>
                 <option>Supplier, processor or freight partnership</option>
                 <option>Service Corps or volunteering</option>
-                <option>Governance or due diligence</option>
+                <option>Nonprofit records or due diligence</option>
                 <option>Media or general inquiry</option>
               </select>
             </label>
-            <label class="full">What are you trying to accomplish?<textarea id="contact-message" name="message" required></textarea></label>
+            <label class="full">Tell us what you have in mind<textarea id="contact-message" name="message" placeholder="What are you trying to accomplish, what help are you seeking, or what would you like to contribute?" required></textarea></label>
           </div>
-          <button class="btn btn-dark" type="submit">Prepare email →</button>
-          <p class="disclosure"><strong>How this works</strong>This opens a prepared email in your own email application. Review it before sending. Do not include confidential, financial, medical or sensitive legal information.</p>
+          <button class="btn btn-dark" type="submit">Prepare my message →</button>
+          <p class="disclosure"><strong>Before you send</strong>This will open a prepared message in your email application so you can review it first. Please do not include confidential, financial, medical or sensitive legal information.</p>
         </form>
       </div>
       <aside class="boundary">
-        <p class="eyebrow">Other direct paths</p>
-        <h2>Use the most useful starting point.</h2>
-        <p><a href="food-banks.html">Build a mixed truckload →</a></p>
-        <p><a href="service-corps.html">Complete the Service Corps questionnaire →</a></p>
-        <p><a href="trust.html">Review nonprofit records →</a></p>
+        <p class="eyebrow">Other ways to begin</p>
+        <h2>Go directly to what interests you.</h2>
+        <p><a href="partners.html">Explore partnership opportunities →</a></p>
+        <p><a href="service-corps.html">Join the Service Corps →</a></p>
+        <p><a href="food-banks.html">Explore food-bank support →</a></p>
+        <p><a href="https://www.every.org/food-aid-project#/donate">Support Food Aid Project →</a></p>
         <p><a href="mailto:info@foodaidproject.org">Email info@foodaidproject.org →</a></p>
       </aside>
     </div></section>
@@ -73,7 +74,7 @@
       var route=document.getElementById('contact-route').value;
       var message=document.getElementById('contact-message').value.trim();
       var subject='[Food Aid Project inquiry] '+route;
-      var body=['Name: '+name,'Email: '+email,'Topic: '+route,'','What I am trying to accomplish:',''+message].join('\n');
+      var body=['Name: '+name,'Email: '+email,'Topic: '+route,'','Message:',''+message].join('\n');
       window.location.href='mailto:info@foodaidproject.org?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
     });
   </script>
