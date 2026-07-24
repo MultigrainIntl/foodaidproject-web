@@ -11,8 +11,8 @@ const routes = [
   { slug: 'homepage', path: '/index.html', heading: 'Better decisions for stronger food and economic security.', essential: 'Skills for Food Security Service Corps' },
   { slug: 'food-bank-supply', path: '/food-banks.html', heading: 'Build your own mixed truckload of bulk dry goods', essential: 'Mixed Truckload Builder' },
   { slug: 'zel-zanj', path: '/zel-zanj.html', heading: 'Zèl Zanj', essential: 'Built for impact per dollar' },
-  { slug: 'service-corps', path: '/service-corps.html', heading: 'The hours are yours.', essential: 'Remote-only operating model:' },
-  { slug: 'trust-transparency', path: '/trust.html', heading: 'Public records should be easy to find.', essential: 'IRS determination' },
+  { slug: 'service-corps', path: '/service-corps.html', heading: 'Bring what you know to work that matters.', essential: 'Remote-only operating model:' },
+  { slug: 'trust-transparency', path: '/trust.html', heading: 'Clear records. Honest answers. Responsible growth.', essential: 'IRS determination' },
   { slug: 'privacy', path: '/privacy.html', heading: 'Privacy notice', essential: 'request correction or deletion' },
 ];
 
