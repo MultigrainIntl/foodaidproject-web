@@ -1,7 +1,14 @@
 (function(){
   var currentUrl=new URL(window.location.href);
-  if(currentUrl.searchParams.get('utm_source')==='chatgpt.com'){
-    currentUrl.searchParams.delete('utm_source');
+  var trackingParameters=['gclid','dclid','fbclid','msclkid','mc_cid','mc_eid'];
+  var removedTracking=false;
+  Array.from(currentUrl.searchParams.keys()).forEach(function(parameter){
+    if(parameter.toLowerCase().indexOf('utm_')===0||trackingParameters.indexOf(parameter.toLowerCase())!==-1){
+      currentUrl.searchParams.delete(parameter);
+      removedTracking=true;
+    }
+  });
+  if(removedTracking){
     window.history.replaceState(null,'',currentUrl.pathname+(currentUrl.searchParams.toString()?'?'+currentUrl.searchParams.toString():'')+currentUrl.hash);
   }
 
