@@ -9,11 +9,27 @@ const serviceCorpsEndpointPattern = '**/AKfycbzVIx_2Qc0w9f4ch7b3uo-n8Krs86r4_DAA
 
 const routes = [
   { slug: 'homepage', path: '/index.html', heading: 'Better decisions for stronger food and economic security.', essential: 'Skills for Food Security Service Corps' },
+  { slug: 'our-work', path: '/work.html', heading: 'Better decisions begin by seeing the whole picture.', essential: 'Some parts are ready to explore' },
   { slug: 'food-bank-supply', path: '/food-banks.html', heading: 'Plan a mixed truckload around your organization’s needs', essential: 'Mixed Truckload Builder' },
+  { slug: 'technology', path: '/technology.html', heading: 'Technology that helps people help people.', essential: 'People remain at the center' },
   { slug: 'zel-zanj', path: '/zel-zanj.html', heading: 'Zèl Zanj', essential: 'Built for impact per dollar' },
   { slug: 'service-corps', path: '/service-corps.html', heading: 'Bring what you know to work that matters.', essential: 'Remote-only operating model:' },
+  { slug: 'progress', path: '/evidence.html', heading: 'What you can explore today—and what we are building next.', essential: 'Explore now' },
+  { slug: 'about', path: '/about.html', heading: 'Food and economic security through better decisions.', essential: 'Ways to Support This Work' },
+  { slug: 'partners', path: '/partners.html', heading: 'Let’s work together.', essential: 'Partner with Food Aid Project' },
+  { slug: 'contact', path: '/contact.html', heading: 'Let’s start a conversation.', essential: 'info@foodaidproject.org' },
   { slug: 'trust-transparency', path: '/trust.html', heading: 'Clear records. Honest answers. Responsible growth.', essential: 'IRS determination' },
   { slug: 'privacy', path: '/privacy.html', heading: 'Privacy notice', essential: 'request correction or deletion' },
+];
+
+const expectedPrimaryNav = [
+  'work.html',
+  'technology.html',
+  'service-corps.html',
+  'evidence.html',
+  'about.html',
+  'partners.html',
+  'https://www.every.org/food-aid-project#/donate',
 ];
 
 const viewports = [
@@ -97,8 +113,12 @@ try {
       });
 
       await check(`${scope} navigation`, async () => {
-        const nav = page.locator('nav').first();
+        const nav = page.locator('nav[aria-label="Primary navigation"], nav[aria-label="Primary"]').first();
         assert(await nav.count(), 'Primary navigation is missing');
+        const navHrefs = await nav.locator('a[href]').evaluateAll(links =>
+          links.map(link => link.getAttribute('href')));
+        assert(JSON.stringify(navHrefs) === JSON.stringify(expectedPrimaryNav),
+          `Primary navigation differs: ${JSON.stringify(navHrefs)}`);
         if (viewport.name === 'desktop') {
           assert(await nav.isVisible(), 'Desktop navigation is not visible');
           assert(await nav.locator('a').count() >= 3, 'Desktop navigation has fewer than three links');
@@ -154,7 +174,12 @@ try {
         await check(`${route.slug} primary internal links`, async () => {
           const hrefs = await page.locator('a[href]').evaluateAll(links => links
             .map(link => link.getAttribute('href'))
-            .filter(href => href && href.startsWith('/') && !href.match(/\.(pdf|png|svg|webp|ico)(#|$)/i)));
+            .filter(href => href
+              && !href.startsWith('#')
+              && !href.startsWith('mailto:')
+              && !href.startsWith('tel:')
+              && !href.match(/^[a-z][a-z0-9+.-]*:/i)
+              && !href.match(/\.(pdf|png|svg|webp|ico)(#|$)/i)));
           for (const href of hrefs) {
             const url = new URL(href, baseUrl);
             url.hash = '';
@@ -232,6 +257,23 @@ try {
     assert(blockedIntakeRequests.length === 0,
       `The test attempted ${blockedIntakeRequests.length} real intake request(s)`);
     await page.screenshot({ path: `${screenshotDir}/service-corps-safe-fallback-desktop.png`, fullPage: true });
+    await context.close();
+  });
+
+  await check('contact routing and approved disclosure', async () => {
+    const context = await browser.newContext({ viewport: { width: viewports[0].width, height: viewports[0].height } });
+    const contact = await context.newPage();
+    await contact.goto(`${baseUrl}/contact.html`, { waitUntil: 'networkidle' });
+    const contactSource = await contact.content();
+    assert(!contactSource.includes('george@multigrain.com'), 'Legacy contact address remains');
+    assert(contactSource.includes('info@foodaidproject.org'), 'Approved contact address is missing');
+
+    const foodBanks = await context.newPage();
+    await foodBanks.goto(`${baseUrl}/food-banks.html`, { waitUntil: 'networkidle' });
+    await foodBanks.getByText(
+      'The Mixed Truckload Builder uses technology developed through Multigrain International and made available to Food Aid Project for public-benefit use.',
+      { exact: true },
+    ).waitFor();
     await context.close();
   });
 } finally {
