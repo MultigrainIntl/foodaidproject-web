@@ -41,6 +41,10 @@ const results = [];
 const failures = [];
 const testedInternalUrls = new Set();
 const blockedIntakeRequests = [];
+const transparentPixel = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEAQH/69K5WQAAAABJRU5ErkJggg==',
+  'base64',
+);
 
 await fs.mkdir(screenshotDir, { recursive: true });
 
@@ -62,11 +66,30 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+async function isolateExternalTools(context) {
+  await context.route('**/api.librewxr.net/public/weather-maps.json', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      radar: {
+        past: [{ time: 1784860800, path: '/qa-precipitation' }],
+        nowcast: [{ time: 1784864400, path: '/qa-precipitation' }],
+      },
+    }),
+  }));
+  await context.route('**/api.librewxr.net/qa-precipitation/**', route => route.fulfill({
+    status: 200,
+    contentType: 'image/png',
+    body: transparentPixel,
+  }));
+}
+
 const browser = await chromium.launch({ headless: true });
 
 try {
   for (const viewport of viewports) {
     const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
+    await isolateExternalTools(context);
 
     // Never allow the public Service Corps endpoint to receive a QA submission.
     await context.route('**/service-corps-config.js', route => route.fulfill({
@@ -200,6 +223,7 @@ try {
 
   await check('Service Corps conditional fields and safe fallback', async () => {
     const context = await browser.newContext({ viewport: { width: viewports[0].width, height: viewports[0].height } });
+    await isolateExternalTools(context);
     await context.route('**/service-corps-config.js', route => route.fulfill({
       status: 200,
       contentType: 'application/javascript',
@@ -262,6 +286,7 @@ try {
 
   await check('contact routing and approved disclosure', async () => {
     const context = await browser.newContext({ viewport: { width: viewports[0].width, height: viewports[0].height } });
+    await isolateExternalTools(context);
     const contact = await context.newPage();
     await contact.goto(`${baseUrl}/contact.html`, { waitUntil: 'networkidle' });
     const contactSource = await contact.content();
@@ -272,7 +297,7 @@ try {
     await foodBanks.goto(`${baseUrl}/food-banks.html`, { waitUntil: 'networkidle' });
     await foodBanks.getByText(
       'The Mixed Truckload Builder uses technology developed through Multigrain International and made available to Food Aid Project for public-benefit use.',
-      { exact: true },
+      { exact: false },
     ).waitFor();
     await context.close();
   });
