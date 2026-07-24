@@ -1,4 +1,10 @@
 (function(){
+  var currentUrl=new URL(window.location.href);
+  if(currentUrl.searchParams.get('utm_source')==='chatgpt.com'){
+    currentUrl.searchParams.delete('utm_source');
+    window.history.replaceState(null,'',currentUrl.pathname+(currentUrl.searchParams.toString()?'?'+currentUrl.searchParams.toString():'')+currentUrl.hash);
+  }
+
   var standardNav=document.getElementById('nav')||document.querySelector('.site-header nav[id]');
   if(standardNav){
     standardNav.innerHTML='<ul>'+
