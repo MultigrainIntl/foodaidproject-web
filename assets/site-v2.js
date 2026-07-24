@@ -1,17 +1,4 @@
 (function(){
-  var currentUrl=new URL(window.location.href);
-  var trackingParameters=['gclid','dclid','fbclid','msclkid','mc_cid','mc_eid'];
-  var removedTracking=false;
-  Array.from(currentUrl.searchParams.keys()).forEach(function(parameter){
-    if(parameter.toLowerCase().indexOf('utm_')===0||trackingParameters.indexOf(parameter.toLowerCase())!==-1){
-      currentUrl.searchParams.delete(parameter);
-      removedTracking=true;
-    }
-  });
-  if(removedTracking){
-    window.history.replaceState(null,'',currentUrl.pathname+(currentUrl.searchParams.toString()?'?'+currentUrl.searchParams.toString():'')+currentUrl.hash);
-  }
-
   var standardNav=document.getElementById('nav')||document.querySelector('.site-header nav[id]');
   if(standardNav){
     standardNav.innerHTML='<ul>'+
