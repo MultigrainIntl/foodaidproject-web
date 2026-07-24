@@ -25,13 +25,19 @@ jobs:
       - name: Checkout candidate
         uses: actions/checkout@v4
 
+      - name: Prepare isolated preview
+        run: |
+          mkdir _preview
+          rsync -a --exclude='.git' --exclude='.github' --exclude='CNAME' --exclude='node_modules' --exclude='artifacts' ./ _preview/
+          touch _preview/.nojekyll
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload site
+      - name: Upload isolated preview
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _preview
 
       - name: Deploy review preview
         id: deployment
