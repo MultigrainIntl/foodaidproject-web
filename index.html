@@ -1,499 +1,288 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Food Aid Project — Bulk food, delivered efficiently to people in need</title>
-<meta name="description" content="Food Aid Project, Inc. is a 501(c)(3) nonprofit that moves bulk food cheaper and faster to people in need — through farm-to-community distribution, food bank supply, volunteer engagement, and decision-support technology.">
-
-<!-- Open Graph / SEO basics -->
-<meta property="og:title" content="Food Aid Project — food and economic security through smarter bulk food distribution">
-<meta property="og:description" content="A 501(c)(3) nonprofit improving access to, and efficiency within, the bulk food procurement and distribution network.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://www.foodaidproject.org/">
-<meta property="og:image" content="https://www.foodaidproject.org/fap-logo-full.png">
-
-<!-- Favicons / touch icon (from brand mark) -->
-<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32">
-<link rel="apple-touch-icon" href="/fap-mark-180.png">
-
-<!-- Source Sans 3 Bold = open-license web substitute for Myriad Pro Bold (brand headings) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;900&display=swap" rel="stylesheet">
-
-<style>
-  /* ---------- Brand tokens (from FAP-Brand-Palette) ---------- */
-  :root{
-    --brand-orange:#F6801E;   /* accents, graphics, large display, fills w/ brown text */
-    --brand-brown:#3B2314;    /* primary text & headings */
-    --action:#C2410C;         /* links & primary buttons w/ white text (5.2:1) */
-    --action-hover:#9A3412;   /* hover/active (7.1:1) */
-    --ink:#3B2314;            /* body text on white (~14:1) */
-    --ink-muted:#57463A;      /* secondary text (8.9:1) */
-    --on-orange:#3B2314;      /* text/icons on brand orange (5.6:1) */
-    --bg:#FFFFFF;
-    --bg-warm:#FDF6EF;        /* soft section background */
-    --surface-dark:#2A1A10;   /* footer / dark sections, white text (~16:1) */
-    --border:#E7DDD3;
-    --success:#157347;
-    --radius:14px;
-    --maxw:1140px;
-    --head:"Source Sans 3", "Myriad Pro", Arial, sans-serif;
-    --body:Arial, "Helvetica Neue", system-ui, sans-serif;
-  }
-
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    margin:0;
-    font-family:var(--body);
-    color:var(--ink);
-    background:var(--bg);
-    line-height:1.6;
-    font-size:18px;
-    -webkit-font-smoothing:antialiased;
-  }
-  h1,h2,h3,h4{font-family:var(--head);font-weight:900;color:var(--brand-brown);line-height:1.15;margin:0 0 .4em;}
-  h2{font-size:clamp(1.6rem,3.2vw,2.4rem);}
-  h3{font-size:1.25rem;font-weight:700;}
-  p{margin:0 0 1rem;}
-  a{color:var(--action);}
-  a:hover{color:var(--action-hover);}
-  img{max-width:100%;display:block;}
-
-  /* Visible focus states (WCAG 2.4.7) */
-  a:focus-visible, button:focus-visible, .btn:focus-visible{
-    outline:3px solid var(--action);
-    outline-offset:2px;
-    border-radius:4px;
-  }
-
-  /* Skip link */
-  .skip{
-    position:absolute;left:-999px;top:0;background:var(--brand-brown);color:#fff;
-    padding:.6rem 1rem;z-index:1000;border-radius:0 0 6px 0;
-  }
-  .skip:focus{left:0;}
-
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 1.25rem;}
-
-  /* ---------- Buttons ---------- */
-  .btn{
-    display:inline-block;font-family:var(--head);font-weight:700;font-size:1rem;
-    padding:.8rem 1.5rem;border-radius:var(--radius);text-decoration:none;
-    border:2px solid transparent;cursor:pointer;transition:background .15s,color .15s,border-color .15s;
-  }
-  .btn-primary{background:var(--action);color:#fff;}
-  .btn-primary:hover{background:var(--action-hover);color:#fff;}
-  .btn-secondary{background:transparent;color:var(--brand-brown);border-color:var(--brand-brown);}
-  .btn-secondary:hover{background:var(--brand-brown);color:#fff;}
-  .btn-on-dark{background:var(--brand-orange);color:var(--on-orange);}
-  .btn-on-dark:hover{background:#ffa24d;color:var(--on-orange);}
-
-  /* ---------- Header / nav ---------- */
-  header.site{
-    position:sticky;top:0;z-index:100;background:var(--bg);
-    border-bottom:1px solid var(--border);
-  }
-  .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 0;}
-  .brand{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--brand-brown);}
-  .brand .mark{
-    width:46px;height:42px;flex:none;display:block;
-  }
-  .brand .name{font-family:var(--head);font-weight:900;font-size:1.15rem;line-height:1.05;}
-  .brand .name small{display:block;font-weight:600;font-size:.7rem;color:var(--ink-muted);letter-spacing:.02em;}
-  nav.primary ul{display:flex;gap:1.4rem;list-style:none;margin:0;padding:0;align-items:center;}
-  nav.primary a{
-    text-decoration:none;color:var(--brand-brown);font-family:var(--head);font-weight:600;font-size:1rem;
-    padding:.3rem 0;border-bottom:2px solid transparent;
-  }
-  nav.primary a:hover{border-bottom-color:var(--brand-orange);color:var(--brand-brown);}
-  .nav-toggle{display:none;background:none;border:2px solid var(--border);border-radius:8px;padding:.4rem .6rem;cursor:pointer;}
-  .nav-toggle svg{display:block;}
-
-  @media (max-width:860px){
-    nav.primary{
-      position:absolute;top:100%;left:0;right:0;background:var(--bg);
-      border-bottom:1px solid var(--border);display:none;
-    }
-    nav.primary.open{display:block;}
-    nav.primary ul{flex-direction:column;align-items:stretch;gap:0;padding:.5rem 1.25rem 1rem;}
-    nav.primary li{border-bottom:1px solid var(--border);}
-    nav.primary li:last-child{border-bottom:none;padding-top:.6rem;}
-    nav.primary a{display:block;padding:.8rem 0;}
-    .nav-toggle{display:inline-flex;}
-  }
-
-  /* ---------- Hero ---------- */
-  .hero{
-    background:
-      radial-gradient(1200px 400px at 80% -10%, rgba(246,128,30,.18), transparent 60%),
-      var(--bg-warm);
-    border-bottom:1px solid var(--border);
-  }
-  .hero .wrap{padding-top:3.5rem;padding-bottom:3.5rem;}
-  .hero h1{font-size:clamp(2.1rem,5vw,3.4rem);max-width:16ch;}
-  .hero .lede{font-size:clamp(1.1rem,2.3vw,1.35rem);max-width:52ch;color:var(--ink);}
-  .hero .model{
-    background:#fff;border:1px solid var(--border);border-left:5px solid var(--brand-orange);
-    border-radius:var(--radius);padding:1rem 1.25rem;margin:1.5rem 0;max-width:60ch;font-size:1.05rem;
-  }
-  .hero .model strong{color:var(--brand-brown);}
-  .cta-row{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:.5rem;}
-  .trust-inline{display:flex;flex-wrap:wrap;gap:1.2rem;align-items:center;margin-top:1.6rem;font-size:.95rem;color:var(--ink-muted);}
-  .trust-inline .chip{display:inline-flex;align-items:center;gap:.4rem;font-weight:600;}
-  .trust-inline .chip svg{flex:none;}
-
-  /* ---------- Sections ---------- */
-  section{padding:3.25rem 0;}
-  section.warm{background:var(--bg-warm);}
-  .section-head{max-width:60ch;margin-bottom:1.8rem;}
-  .section-head p{color:var(--ink-muted);}
-  .eyebrow{font-family:var(--head);font-weight:700;text-transform:uppercase;letter-spacing:.08em;
-    font-size:.8rem;color:var(--action);margin-bottom:.4rem;}
-
-  /* Programs grid */
-  .grid{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));}
-  .card{
-    background:#fff;border:1px solid var(--border);border-radius:var(--radius);
-    padding:1.4rem;display:flex;flex-direction:column;height:100%;
-  }
-  .card h3{margin-bottom:.3rem;}
-  .card p{font-size:.98rem;color:var(--ink-muted);flex:1;}
-  .badge{
-    align-self:flex-start;font-family:var(--head);font-weight:700;font-size:.72rem;
-    text-transform:uppercase;letter-spacing:.05em;padding:.25rem .6rem;border-radius:999px;margin-bottom:.7rem;
-  }
-  .badge.active{background:#e6f4ec;color:#0f5132;border:1px solid #abd5bd;}
-  .badge.internal{background:#fdeede;color:#8a4b00;border:1px solid #f1c98a;}
-  .badge.upcoming{background:#eee9e3;color:#5b4a3a;border:1px solid #d8cabb;}
-  .card .more{margin-top:1rem;font-family:var(--head);font-weight:700;font-size:.95rem;text-decoration:none;}
-  .card .more:after{content:" \2192";}
-
-  /* Impact */
-  .impact-grid{display:grid;gap:1.5rem;grid-template-columns:1.3fr 1fr;align-items:start;}
-  @media (max-width:760px){.impact-grid{grid-template-columns:1fr;}}
-  .story{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.6rem;}
-  .story .src{font-size:.82rem;color:var(--ink-muted);margin-top:.8rem;font-style:italic;}
-  .stat{background:var(--brand-brown);color:#fff;border-radius:var(--radius);padding:1.6rem;}
-  .stat h3{color:#fff;}
-  .stat .big{font-family:var(--head);font-weight:900;font-size:2.4rem;color:var(--brand-orange);line-height:1;}
-  .stat .note{font-size:.82rem;color:#e7d8c9;margin-top:.6rem;}
-  .placeholder{
-    background:repeating-linear-gradient(45deg,#fff,#fff 10px,#fdf6ef 10px,#fdf6ef 20px);
-    border:1px dashed var(--action);border-radius:8px;padding:.5rem .7rem;font-size:.85rem;
-    color:var(--action);font-weight:600;display:inline-block;
-  }
-
-  /* Get involved */
-  .involve-grid{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
-  .involve{background:#fff;border:1px solid var(--border);border-top:4px solid var(--brand-orange);
-    border-radius:var(--radius);padding:1.4rem;}
-  .involve h3{margin-bottom:.4rem;}
-  .involve p{font-size:.95rem;color:var(--ink-muted);}
-
-  /* Trust strip */
-  .trust-strip{background:var(--surface-dark);color:#fff;}
-  .trust-strip .wrap{display:flex;flex-wrap:wrap;gap:1.5rem 2.5rem;align-items:center;justify-content:space-between;padding:2rem 1.25rem;}
-  .trust-strip h2{color:#fff;font-size:1.5rem;margin:0;}
-  .trust-strip .items{display:flex;flex-wrap:wrap;gap:1.5rem;font-size:.95rem;}
-  .trust-strip .items .chip{display:inline-flex;gap:.5rem;align-items:center;color:#f0e6db;}
-
-  /* Footer */
-  footer.site{background:var(--surface-dark);color:#e7d8c9;padding:2.5rem 0 2rem;}
-  footer.site a{color:#fff;text-decoration:none;}
-  footer.site a:hover{text-decoration:underline;color:#fff;}
-  .foot-grid{display:grid;gap:1.5rem;grid-template-columns:1.4fr 1fr 1fr;}
-  @media (max-width:700px){.foot-grid{grid-template-columns:1fr;}}
-  footer .mission{max-width:40ch;font-size:.95rem;}
-  footer h4{color:#fff;font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;}
-  footer ul{list-style:none;margin:0;padding:0;}
-  footer li{margin-bottom:.4rem;font-size:.95rem;}
-  .foot-legal{border-top:1px solid #4a3526;margin-top:1.8rem;padding-top:1.2rem;font-size:.85rem;display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;justify-content:space-between;}
-
-  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
-
-  /* Staggered hero reveal (respects reduced motion) */
-  @media (prefers-reduced-motion:no-preference){
-    .reveal{opacity:0;transform:translateY(12px);animation:rise .6s ease forwards;}
-    .reveal.d1{animation-delay:.05s;}
-    .reveal.d2{animation-delay:.15s;}
-    .reveal.d3{animation-delay:.25s;}
-    .reveal.d4{animation-delay:.35s;}
-    @keyframes rise{to{opacity:1;transform:none;}}
-  }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Food Aid Project — Better decisions for food and economic security</title>
+  <meta name="description" content="Food Aid Project connects agriculture, markets, logistics, technology and people to strengthen food and economic security.">
+  <meta property="og:title" content="Food Aid Project — Food and economic security through better decisions">
+  <meta property="og:description" content="A nonprofit connecting agriculture, markets, logistics, technology and people around practical food-system decisions.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.foodaidproject.org/">
+  <meta property="og:image" content="https://www.foodaidproject.org/fap-logo-full.png">
+  <link rel="icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/site-v2.css">
+  <link rel="stylesheet" href="assets/home-v4.css">
 </head>
-<body>
-<a class="skip" href="#main">Skip to main content</a>
+<body class="home-v4">
+  <a class="skip" href="#main">Skip to content</a>
 
-<!-- ===================== HEADER ===================== -->
-<header class="site">
-  <div class="wrap nav">
-    <a class="brand" href="/" aria-label="Food Aid Project home">
-      <img class="mark" src="/fap-mark.svg" width="46" height="42" alt="" aria-hidden="true">
-      <span class="name">Food Aid Project<small>A 501(c)(3) nonprofit</small></span>
-    </a>
+  <header class="fap-header" data-site-header>
+    <div class="fap-shell fap-nav-wrap">
+      <a class="fap-brand" href="index.html" aria-label="Food Aid Project home">
+        <img src="fap-logo-horizontal-ondark.svg" alt="Food Aid Project">
+      </a>
+      <button class="fap-menu atlas-menu" aria-expanded="false" aria-controls="fap-nav" aria-label="Open menu">
+        <span></span><span></span>
+      </button>
+      <nav id="fap-nav" aria-label="Primary navigation">
+        <a href="work.html">Our work</a>
+        <a href="technology.html">Technology</a>
+        <a href="service-corps.html">Service Corps</a>
+        <a href="evidence.html">Progress</a>
+        <a href="about.html">About</a>
+        <a href="partners.html">Partner</a>
+        <a class="fap-donate" href="https://www.every.org/food-aid-project#/donate">Donate</a>
+      </nav>
+    </div>
+  </header>
 
-    <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
+  <main id="main">
+    <section class="fap-hero" id="top">
+      <div class="fap-hero-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="fap-shell fap-hero-grid">
+        <div class="fap-hero-copy" data-reveal>
+          <p class="fap-eyebrow"><span></span> Food and economic security through better decisions</p>
+          <h1>Better decisions for <em>stronger food and economic security.</em></h1>
+          <p class="fap-hero-lede">Food Aid Project connects agriculture, weather, markets, logistics, technology and people—helping organizations understand changing conditions, use resources wisely and build lasting capacity.</p>
+          <div class="fap-actions">
+            <a class="fap-button fap-button-primary" href="#working-now">Explore what is available <span aria-hidden="true">↓</span></a>
+            <a class="fap-button fap-button-secondary" href="partners.html">Partner with us <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
 
-    <nav class="primary" id="primary-nav" aria-label="Primary">
-      <ul>
-        <li><a href="#programs">Programs</a></li>
-        <li><a href="/service-corps.html">Service Corps</a></li>
-        <li><a href="#impact">Impact</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#get-involved">Get Involved</a></li>
-        <li><a class="btn btn-primary" href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate</a></li>
-      </ul>
+        <figure class="fap-hero-visual" data-reveal>
+          <img src="assets/images/beans-and-grains.webp" width="2400" height="1800" alt="Assorted dry beans and grains in open market sacks">
+          <div class="fap-hero-visual-inset"><img src="assets/images/grain-loading.webp" width="2400" height="1350" alt="Grain harvest machinery in a field"></div>
+          <figcaption><span>Food is physical.</span> The decisions around it are connected.</figcaption>
+        </figure>
+      </div>
+
+      <div class="fap-shell fap-facts" data-reveal>
+        <div><span>Established</span><strong>2010</strong></div>
+        <div><span>Organization</span><strong>501(c)(3) public charity</strong></div>
+        <div><span>Based in</span><strong>Fort Collins, Colorado</strong></div>
+        <div><span>Our approach</span><strong>Build carefully. Learn openly.</strong></div>
+      </div>
+    </section>
+
+    <nav class="fap-jump" aria-label="Explore this page">
+      <div class="fap-shell">
+        <span>Explore</span>
+        <a href="#working-now">What exists today</a>
+        <a href="#model">How it connects</a>
+        <a href="#programs">All programs</a>
+      </div>
     </nav>
-  </div>
-</header>
 
-<main id="main">
-
-  <!-- ===================== HERO ===================== -->
-  <section class="hero" aria-labelledby="hero-h">
-    <div class="wrap">
-      <p class="eyebrow reveal d1">Food &amp; economic security</p>
-      <h1 id="hero-h" class="reveal d1">We move bulk food cheaper and faster to people who need it.</h1>
-      <p class="lede reveal d2">Food Aid Project is a 501(c)(3) nonprofit that makes the bulk food supply chain more
-        efficient — so more food reaches more people, for less, both abroad and across the United States.</p>
-
-      <p class="model reveal d3"><strong>The model, in one sentence:</strong> we partner directly with
-        farmer/processors for direct pricing, then move that food efficiently — no middleman, no bureaucracy —
-        to deliver bulk staple food at the lowest possible cost, and put the savings into more meals for people in need.</p>
-
-      <div class="cta-row reveal d3">
-        <a class="btn btn-primary" href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate</a>
-        <a class="btn btn-secondary" href="#get-involved">Partner with us</a>
+    <section class="fap-simple-path" aria-label="How Food Aid Project works">
+      <div class="fap-shell">
+        <p class="fap-section-tag">What we do best</p>
+        <ol>
+          <li><span>01</span><strong>See</strong><p>Make complex weather, crop and market information easier to understand.</p></li>
+          <li><span>02</span><strong>Decide</strong><p>Help people compare choices without making decisions for them.</p></li>
+          <li><span>03</span><strong>Move</strong><p>Improve sourcing, transportation and use of limited resources.</p></li>
+          <li><span>04</span><strong>Strengthen</strong><p>Put useful knowledge and tools within reach of more people.</p></li>
+        </ol>
       </div>
+    </section>
 
-      <div class="trust-inline reveal d4">
-        <span class="chip">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-          501(c)(3) nonprofit
-        </span>
-        <span class="chip">EIN&nbsp;27-3474278</span>
-        <span class="chip">Fort Collins, Colorado · est. 2010</span>
+    <section class="fap-intro" id="what-we-do">
+      <div class="fap-shell fap-intro-grid">
+        <div data-reveal>
+          <p class="fap-section-tag">Technology that helps people help people</p>
+          <h2>Better information. Stronger human decisions.</h2>
+        </div>
+        <div class="fap-intro-copy" data-reveal>
+          <p class="fap-lede">Powerful technology should not be available only to powerful organizations.</p>
+          <p>Food Aid Project designs practical decision-support tools to help farmers, food organizations and communities understand difficult situations, consider their options and make better choices more often.</p>
+          <p><strong>People remain at the center.</strong> Technology can make complex information easier to understand, but it does not replace local knowledge, professional expertise, human responsibility or the connection between people.</p>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===================== PROGRAMS ===================== -->
-  <section id="programs" aria-labelledby="programs-h">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">What we do</p>
-        <h2 id="programs-h">Concrete programs, real beneficiaries</h2>
-        <p>Our work spans agriculture, logistics, technology, and human capability. Here's where it lands — each program with its honest status.</p>
+    <section class="fap-intelligence" id="weather-intelligence" aria-labelledby="intelligence-title">
+      <div class="fap-shell fap-intelligence-grid">
+        <div data-reveal>
+          <p class="fap-section-tag">Weather &amp; agricultural intelligence</p>
+          <h2 id="intelligence-title">See changing conditions around the world.</h2>
+          <p class="fap-lede">Weather shapes crops, supply, transportation and food security.</p>
+          <p>This rotating global precipitation view makes those connections visible. It shows recent and predicted conditions across major agricultural regions—one practical example of how better information can support earlier decisions.</p>
+          <div class="fap-live-badges"><span>Global view</span><span>Recent + predicted</span><span>Rotating regions</span></div>
+          <a class="fap-arrow-link" href="technology.html">Explore technology and intelligence <span>→</span></a>
+        </div>
+        <div class="fap-radar-frame" data-reveal>
+          <iframe src="gisit-radar-embed.html" title="Animated global precipitation map across major agricultural regions" loading="lazy"></iframe>
+          <p><strong>Global precipitation map:</strong> radar is used where available, with modeled precipitation elsewhere. For local hazards and warnings, consult the relevant official weather service.</p>
+        </div>
       </div>
+    </section>
 
-      <div class="grid">
-        <article class="card">
-          <span class="badge active">Active</span>
-          <h3>International Food Distribution</h3>
-          <p>Through our Zèl Zanj (“Angel Wings”) program, a sourcing partner contracts directly with
-             farmers to reclean their split beans, which we ship in 50&nbsp;kg bags through NGO partners to
-             families across the Caribbean and Central America — supporting farmers and food security alike.</p>
-          <a class="more" href="/zel-zanj.html">See how Zèl Zanj works</a>
+    <section class="fap-working" id="working-now" aria-labelledby="working-title">
+      <div class="fap-shell">
+        <div class="fap-section-head" data-reveal>
+          <div><p class="fap-section-tag">Explore now</p><h2 id="working-title">Start with something you can see or use.</h2></div>
+          <p>Food Aid Project is still building. These public tools, demonstrations and records are practical places to begin.</p>
+        </div>
+        <div class="fap-working-list">
+          <article data-reveal><span>01</span><div><p>Live demonstration</p><h3>Global precipitation map</h3></div><p>See recent and predicted precipitation move across major agricultural regions.</p><a href="technology.html#global-map">Explore the map <span>→</span></a></article>
+          <article data-reveal><span>02</span><div><p>Planning tool</p><h3>Mixed Truckload Builder</h3></div><p>Explore products and quantities for a possible mixed load of staple foods.</p><a href="food-banks.html#builder">Open the builder <span>→</span></a></article>
+          <article data-reveal><span>03</span><div><p>Intake available</p><h3>Skills for Food Security</h3></div><p>Share your skills and interests through the Service Corps questionnaire.</p><a href="service-corps.html#questionnaire">Explore the Service Corps <span>→</span></a></article>
+          <article data-reveal><span>04</span><div><p>Public records</p><h3>Nonprofit since 2010</h3></div><p>Review Food Aid Project’s IRS determination letter and dated public records.</p><a href="trust.html">Review the records <span>→</span></a></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="fap-work" aria-labelledby="work-title">
+      <div class="fap-shell">
+        <div class="fap-section-head" data-reveal>
+          <div><p class="fap-section-tag">Connected areas of work</p><h2 id="work-title">See. Decide. Move. Strengthen.</h2></div>
+          <p>Each program remains distinct. These pathways simply make it easier to understand how the work fits together.</p>
+        </div>
+
+        <article class="fap-work-row" id="move-food" data-reveal>
+          <span class="fap-row-number">01</span>
+          <div><p class="fap-row-kicker">Move food smarter</p><h3>Improve the choices between supplier and destination.</h3></div>
+          <div><p>We bring experience in bulk food, procurement, delivered cost and transportation to problems that can quietly consume charitable resources.</p><a href="#programs">Explore food and logistics programs <span>→</span></a></div>
         </article>
 
-        <article class="card">
-          <span class="badge active">Active</span>
-          <h3>Food Bank Supply</h3>
-          <p>We supply packaged staples — beans, lentils, peas, oatmeal, rice, and cereal — to food banks
-             across the US and Canada, who can build a custom truckload online.</p>
-          <a class="more" href="/food-banks.html">Build a truckload</a>
+        <article class="fap-work-row" id="see-risk" data-reveal>
+          <span class="fap-row-number">02</span>
+          <div><p class="fap-row-kicker">See risk sooner</p><h3>Turn weather, crop and market information into useful context.</h3></div>
+          <div><p>Geospatial tools, weather intelligence, crop monitoring and market knowledge can help organizations act before a problem becomes a crisis.</p><a href="technology.html">Explore intelligence and technology <span>→</span></a></div>
         </article>
 
-        <article class="card">
-          <span class="badge internal">Internal tool</span>
-          <h3>Decision-Support Engine</h3>
-          <p>Our in-house pricing and sourcing engine is what makes the food programs cost-effective —
-             working from direct farmer/processor pricing and freight to find the lowest delivered cost.</p>
-          <a class="more">How the engine helps</a>
-        </article>
-
-        <article class="card">
-          <span class="badge upcoming">Upcoming</span>
-          <h3>GIS Crop-Yield Prediction</h3>
-          <p>A forthcoming tool to predict crop yields in near real time — fusing weather, satellite
-             imagery, and crop growth models — built with a leading GIS partner.
-             <span class="placeholder">[GIS partner name — pending permission]</span></p>
-          <a class="more" href="/programs/gis">Read about the GIS work</a>
-        </article>
-
-        <article class="card">
-          <span class="badge upcoming">Interest network open</span>
-          <h3>Skills for Food Security Service Corps</h3>
-          <p>An individualized approach to volunteer and community service built around a foundational principle: the hours are yours. Tell us what you know, what you care about, and what you already love to do.</p>
-          <a class="more" href="/service-corps.html">Complete the interest questionnaire</a>
+        <article class="fap-work-row" id="build-capability" data-reveal>
+          <span class="fap-row-number">03</span>
+          <div><p class="fap-row-kicker">Build capability</p><h3>Help people make better choices more often.</h3></div>
+          <div><p>Food Aid Project develops partnerships and expands access to useful information, practical tools and skilled support—strengthening the people already doing the work.</p><a href="service-corps.html">Explore the Service Corps <span>→</span></a></div>
         </article>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===================== IMPACT ===================== -->
-  <section id="impact" class="warm" aria-labelledby="impact-h">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">The proof</p>
-        <h2 id="impact-h">Efficiency you can see in the meals</h2>
-        <p>We don't lead with adjectives. Here's a concrete example and the economics behind the model.</p>
-      </div>
-
-      <div class="impact-grid">
-        <div class="story">
-          <h3>The pinto-bean savings, Alabama</h3>
-          <p>By buying and shipping smart, a single food-aid order delivered roughly
-             <strong>200,000 portions of pinto beans for about $6,000</strong> — food that would
-             have cost far more through conventional channels. Same beans, more meals, because the
-             supply chain was the thing we fixed.</p>
-          <p class="src">Source: Food Aid Project program records. <span class="placeholder">[Date &amp; exact figures — verify before publish]</span></p>
+    <section class="fap-model" id="model" aria-labelledby="model-title">
+      <div class="fap-model-grid" aria-hidden="true"></div>
+      <div class="fap-shell">
+        <div class="fap-model-head" data-reveal>
+          <div><p class="fap-section-tag">How it connects</p><h2 id="model-title">One mission. Many connected decisions.</h2></div>
+          <p>Select a point in the model to follow that part of the work.</p>
         </div>
 
-        <div class="stat">
-          <h3>Why split beans go further</h3>
-          <p class="big">~10 portions</p>
-          <p>per pound of beans — and a single 20-ft container carries enough for hundreds of thousands of portions.</p>
-          <p class="note">Capacity figure from program materials, stated as capacity — not a claim of meals already delivered. <span class="placeholder" style="color:#ffd9b3;border-color:#ffd9b3;">[Verify &amp; date]</span></p>
+        <div class="fap-model-layout">
+          <div class="fap-orbit-wrap" data-reveal>
+            <svg class="fap-orbit" viewBox="0 0 760 690" role="img" aria-labelledby="orbit-title orbit-desc">
+              <title id="orbit-title">Food Aid Project connected operating model</title>
+              <desc id="orbit-desc">Production, intelligence, markets, procurement, logistics and access connect around food and economic security. Each node links to related work.</desc>
+              <defs>
+                <radialGradient id="fap-glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f47b20" stop-opacity=".22"/><stop offset="1" stop-color="#f47b20" stop-opacity="0"/></radialGradient>
+              </defs>
+              <circle class="fap-orbit-glow" cx="380" cy="330" r="255" fill="url(#fap-glow)"/>
+              <g class="fap-orbit-rings" fill="none"><circle cx="380" cy="330" r="224"/><circle cx="380" cy="330" r="151"/><ellipse cx="380" cy="330" rx="300" ry="205"/><ellipse cx="380" cy="330" rx="205" ry="300"/></g>
+              <g class="fap-orbit-lines"><path d="M380 330L160 198M380 330L380 78M380 330L610 194M380 330L635 444M380 330L386 610M380 330L125 448"/></g>
+              <g class="fap-orbit-center"><circle cx="380" cy="330" r="91"/><text x="380" y="314" text-anchor="middle">FOOD +</text><text x="380" y="340" text-anchor="middle">ECONOMIC</text><text x="380" y="366" text-anchor="middle">SECURITY</text></g>
+              <a href="#see-risk" class="fap-orbit-node" aria-label="Production: crops, conditions and supply"><g transform="translate(160 198)"><circle r="10"/><text x="-21" y="-20" text-anchor="end">PRODUCTION</text><text class="fap-node-note" x="-21" y="4" text-anchor="end">crops · conditions · supply</text></g></a>
+              <a href="#see-risk" class="fap-orbit-node" aria-label="Intelligence: weather, GIS and research"><g transform="translate(380 78)"><circle r="10"/><text x="0" y="-27" text-anchor="middle">INTELLIGENCE</text><text class="fap-node-note" x="0" y="-5" text-anchor="middle">weather · GIS · research</text></g></a>
+              <a href="#move-food" class="fap-orbit-node" aria-label="Markets: price, access and opportunity"><g transform="translate(610 194)"><circle r="10"/><text x="21" y="-20">MARKETS</text><text class="fap-node-note" x="21" y="4">price · access · opportunity</text></g></a>
+              <a href="#move-food" class="fap-orbit-node" aria-label="Procurement: suppliers and delivered cost"><g transform="translate(635 444)"><circle r="10"/><text x="21" y="-4">PROCUREMENT</text><text class="fap-node-note" x="21" y="20">suppliers · delivered cost</text></g></a>
+              <a href="#move-food" class="fap-orbit-node" aria-label="Logistics: freight, routes and timing"><g transform="translate(386 610)"><circle r="10"/><text x="0" y="38" text-anchor="middle">LOGISTICS</text><text class="fap-node-note" x="0" y="61" text-anchor="middle">freight · routes · timing</text></g></a>
+              <a href="#build-capability" class="fap-orbit-node" aria-label="Access: organizations and communities"><g transform="translate(125 448)"><circle r="10"/><text x="-21" y="-4" text-anchor="end">ACCESS</text><text class="fap-node-note" x="-21" y="20" text-anchor="end">organizations · communities</text></g></a>
+              <circle class="fap-orbit-traveler" cx="380" cy="106" r="5"/>
+            </svg>
+            <p class="fap-model-caption"><span>Interactive model</span> Follow the connections</p>
+          </div>
+
+          <aside class="fap-model-note" data-reveal>
+            <p class="fap-model-quote">“Most organizations work at one point in the food system. Food Aid Project helps connect the decisions between them.”</p>
+            <div><span>Upstream</span><p>See conditions, risk and opportunity earlier.</p></div>
+            <div><span>In motion</span><p>Improve purchasing, freight and delivery choices.</p></div>
+            <div><span>Long term</span><p>Build tools and capability that extend beyond one shipment.</p></div>
+          </aside>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===================== ABOUT (short) ===================== -->
-  <section id="about" aria-labelledby="about-h">
-    <div class="wrap">
-      <div class="section-head" style="max-width:64ch;">
-        <p class="eyebrow">Who we are</p>
-        <h2 id="about-h">Not a bake-sale charity</h2>
-        <p>Food Aid Project operates at a professional level in bulk agriculture, logistics, and
-           technology. Our mission is to advance food and economic security by improving access to,
-           and efficiency within, the bulk food procurement and distribution network — relieving need,
-           reducing burdens on government, and creating opportunity in underserved areas.</p>
-        <p><a href="/about">More about our mission, model, and leadership</a> ·
-           <a href="/trust.html">Trust &amp; transparency</a></p>
+    <section class="fap-photo-bridge" aria-label="Food production, storage and international movement">
+      <figure><img src="assets/images/warehouse-sacks.webp" width="2400" height="1600" loading="lazy" alt="Pallets of bagged goods stacked inside a warehouse"><figcaption>Storage and handling</figcaption></figure>
+      <div><p class="fap-section-tag">From production to access</p><p>Every decision between field, market and destination can change how far limited resources reach.</p></div>
+      <figure><img src="assets/images/port-night.webp" width="2400" height="1800" loading="lazy" alt="Container port operating at night"><figcaption>Freight and international movement</figcaption></figure>
+    </section>
+
+    <section class="fap-programs" id="programs" aria-labelledby="programs-title">
+      <div class="fap-shell">
+        <div class="fap-section-head" data-reveal>
+          <div><p class="fap-section-tag">Program portfolio</p><h2 id="programs-title">Explore the work.</h2></div>
+          <p>Open any program for a plain-English description and its current status.</p>
+        </div>
+
+        <div class="fap-program-list" data-reveal>
+          <details id="food-access"><summary><span>01</span><strong>Food Bank Supply</strong><em>Building now</em><b aria-hidden="true">+</b></summary><div><p>Bulk-food access and mixed-load planning intended to help food banks consider products, quantities and transportation together.</p><a href="food-banks.html">Explore Food Bank Supply <span>↗</span></a></div></details>
+          <details><summary><span>02</span><strong>Zèl Zanj</strong><em>Building now</em><b aria-hidden="true">+</b></summary><div><p>A distinct humanitarian food-access initiative within the broader Food Aid Project portfolio.</p><a href="zel-zanj.html">Explore Zèl Zanj <span>↗</span></a></div></details>
+          <details><summary><span>03</span><strong>Procurement &amp; transportation support</strong><em>Building now</em><b aria-hidden="true">+</b></summary><div><p>Practical ways to consider sourcing, delivered cost, freight, timing and destination together.</p><a href="work.html#food-access">Explore food access and logistics <span>↗</span></a></div></details>
+          <details id="market-access"><summary><span>04</span><strong>Market access &amp; commodity intelligence</strong><em>Building now</em><b aria-hidden="true">+</b></summary><div><p>Price discovery and market pathways connecting agricultural knowledge with the needs of farmers, processors, buyers, NGOs and food organizations.</p><a href="work.html">Explore the portfolio <span>↗</span></a></div></details>
+          <details><summary><span>05</span><strong>Weather &amp; early warning</strong><em>Building now</em><b aria-hidden="true">+</b></summary><div><p>Decision support connecting weather hazards, forecasts and agricultural conditions with logistics, food access and earlier action.</p><a href="technology.html">Explore the technology direction <span>→</span></a></div></details>
+          <details><summary><span>06</span><strong>Crop &amp; geospatial intelligence</strong><em>Building now</em><b aria-hidden="true">+</b></summary><div><p>Crop geography, development, field intelligence, yield prediction, Farm Pro, ground truth and proposed country-level pilots.</p><a href="technology.html">Explore intelligence and technology <span>↗</span></a></div></details>
+          <details><summary><span>07</span><strong>Technology access</strong><em>Building now</em><b aria-hidden="true">+</b></summary><div><p>Mission-focused pathways that help organizations explore useful weather, crop and decision-support tools.</p><a href="technology.html">Explore technology access <span>↗</span></a></div></details>
+          <details><summary><span>08</span><strong>Research &amp; education</strong><em>Building now</em><b aria-hidden="true">+</b></summary><div><p>Research partnerships, methods, validation, learning and opportunities to connect academic knowledge with food-system needs.</p><a href="partners.html">Explore research partnerships <span>↗</span></a></div></details>
+          <details><summary><span>09</span><strong>Skills for Food Security Service Corps</strong><em>Building now · intake available</em><b aria-hidden="true">+</b></summary><div><p>Remote, skills-first service connecting professional knowledge, research, outreach, mentoring and eligible community service with mission needs.</p><a href="service-corps.html">Explore the Service Corps <span>↗</span></a></div></details>
+        </div>
+
+        <p class="fap-program-note" data-reveal><strong>Portfolio note:</strong> Oatmeal 4 Hope is paused/canceled. Pureza, grantmaking, expanded food-flow intelligence and other initiatives will be published only when their current boundaries are verified.</p>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===================== GET INVOLVED ===================== -->
-  <section id="get-involved" class="warm" aria-labelledby="involve-h">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">Take the next step</p>
-        <h2 id="involve-h">Ways to move food forward</h2>
-      </div>
-
-      <div class="involve-grid">
-        <div class="involve">
-          <h3>Donate</h3>
-          <p>Your gift converts directly into delivered meals. Give once, monthly, or yearly — 100% tax-deductible.</p>
-          <p><a class="btn btn-primary" href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate via Every.org</a></p>
-        </div>
-        <div class="involve">
-          <h3>Partner</h3>
-          <p>NGOs, agriculture and freight businesses, and public-sector agencies — let's move food together.</p>
-          <p><a href="/contact">Start a conversation →</a></p>
-        </div>
-        <div class="involve">
-          <h3>Volunteer or serve</h3>
-          <p>Tell us what you know, what you do well, and what you already love to do. We explore individualized volunteer and eligible community-service opportunities.</p>
-          <p><a href="/service-corps.html">Complete the interest questionnaire →</a></p>
-        </div>
-        <div class="involve">
-          <h3>Stay informed</h3>
-          <p>Get occasional updates on our programs and impact.</p>
-          <p><a href="/get-involved#subscribe">Subscribe →</a></p>
+    <section class="fap-origin">
+      <div class="fap-shell fap-origin-grid">
+        <div class="fap-equation" data-reveal aria-hidden="true"><span>PRICE</span><b>+</b><span>FREIGHT</span><b>=</b><span>DELIVERED COST</span><small>The founding decision</small></div>
+        <div data-reveal>
+          <p class="fap-section-tag">Why Food Aid Project exists</p>
+          <h2>Built from practical experience inside the food market.</h2>
+          <p class="fap-lede">Food Aid Project began with a simple observation: nonprofit food buyers did not always have the same information, relationships and tools available to experienced commercial buyers.</p>
+          <p>The organization was created to transfer useful knowledge, improve access and help capable organizations make stronger procurement and transportation decisions.</p>
+          <a class="fap-arrow-link" href="about.html">Read the Food Aid Project story <span>→</span></a>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===================== TRUST STRIP ===================== -->
-  <section class="trust-strip" aria-labelledby="trust-h">
-    <div class="wrap">
-      <h2 id="trust-h">Real, registered, accountable.</h2>
-      <div class="items">
-        <span class="chip">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-orange)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-          IRS 501(c)(3)
-        </span>
-        <span class="chip">EIN&nbsp;27-3474278</span>
-        <span class="chip">Founded 2010 · Fort Collins, CO</span>
-        <span class="chip"><span class="placeholder" style="background:none;border-color:var(--brand-orange);color:var(--brand-orange);">[Candid/GuideStar seal — TBD]</span></span>
+    <section class="fap-trust" id="trust">
+      <div class="fap-shell">
+        <div class="fap-trust-intro" data-reveal><p class="fap-section-tag">Clear about our progress</p><h2>See what is available now—and what is still being built.</h2></div>
+        <div class="fap-trust-grid">
+          <article data-reveal><span>Progress</span><h3>Explore the work directly.</h3><p>Open the public tools, view the map and see the four connected areas Food Aid Project is developing.</p><a href="evidence.html">See current progress <span>→</span></a></article>
+          <article data-reveal><span>Organization</span><h3>Find the records in one place.</h3><p>Review Food Aid Project’s nonprofit documents, governance information and fundraising commitments.</p><a href="trust.html">Review trust and transparency <span>→</span></a></article>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-</main>
-
-<!-- ===================== FOOTER ===================== -->
-<footer class="site">
-  <div class="wrap">
-    <div class="foot-grid">
-      <div>
-        <span class="brand" style="margin-bottom:.6rem;">
-          <img class="mark" src="/fap-mark-ondark.svg" width="40" height="36" alt="" aria-hidden="true">
-          <span class="name" style="color:#fff;">Food Aid Project</span>
-        </span>
-        <p class="mission">Advancing food and economic security by improving access to, and efficiency within, the bulk food procurement and distribution network.</p>
+    <section class="fap-partner" aria-labelledby="support-title">
+      <div class="fap-shell fap-partner-grid">
+        <div data-reveal><p class="fap-section-tag">Choose a path</p><h2 id="support-title">Ways to Support This Work</h2></div>
+        <div data-reveal>
+          <p>Food Aid Project grows through people and organizations willing to share resources, knowledge and practical experience. Choose the path that fits you.</p>
+          <div class="fap-support-links">
+            <a href="https://www.every.org/food-aid-project#/donate"><strong>Donate</strong><span>Support the nonprofit mission. →</span></a>
+            <a href="partners.html"><strong>Partner with Us</strong><span>Bring an organization, idea or challenge. →</span></a>
+            <a href="service-corps.html"><strong>Join the Service Corps</strong><span>Contribute skills and practical experience. →</span></a>
+          </div>
+        </div>
       </div>
+    </section>
+  </main>
 
-      <div>
-        <h4>Programs</h4>
-        <ul>
-          <li><a href="/zel-zanj.html">International Food Distribution</a></li>
-          <li><a href="/food-banks.html">Food Bank Supply</a></li>
-          <li><a href="/programs/software">Decision-Support Engine</a></li>
-          <li><a href="/programs/gis">GIS Crop-Yield Prediction</a></li>
-          <li><a href="/service-corps.html">Skills for Food Security Service Corps</a></li>
-        </ul>
+  <footer class="fap-footer">
+    <div class="fap-shell">
+      <div class="fap-footer-top">
+        <div><img src="fap-logo-horizontal-ondark.svg" alt="Food Aid Project"><p>Connecting agriculture, markets, logistics, technology and people for stronger food and economic security.</p></div>
+        <div><h3>Explore</h3><a href="work.html">Our work</a><a href="#model">How it connects</a><a href="#programs">Programs</a><a href="evidence.html">Progress</a></div>
+        <div><h3>Organization</h3><a href="about.html">About</a><a href="partners.html">Partner with us</a><a href="service-corps.html">Service Corps</a><a href="trust.html">Trust &amp; transparency</a></div>
+        <div><h3>Connect</h3><a href="contact.html">Contact</a><a href="privacy.html">Privacy</a><a href="https://www.every.org/food-aid-project#/donate">Donate</a></div>
       </div>
-
-      <div>
-        <h4>Organization</h4>
-        <ul>
-          <li><a href="/about">About</a></li>
-          <li><a href="/trust.html">Trust &amp; Transparency</a></li>
-          <li><a href="/contact">Contact</a></li>
-          <li><a href="https://www.every.org/food-aid-project?utm_campaign=donate-link#/donate/card">Donate</a></li>
-        </ul>
-      </div>
+      <div class="fap-footer-bottom"><span>© <span data-year></span> Food Aid Project, Inc.</span><span>501(c)(3) public charity · EIN 27-3474278 · Fort Collins, Colorado</span></div>
+      <p class="fap-photo-credit">Contextual photography: Engin Akyurt/Pexels, Darío Bonzi, Zemos and CHUTTERSNAP/Unsplash.</p>
     </div>
-
-    <div class="foot-legal">
-      <span>Food Aid Project, Inc. · 501(c)(3) nonprofit · EIN&nbsp;27-3474278 · Fort Collins, Colorado</span>
-      <span><a href="/privacy.html">Privacy</a> · <a href="mailto:info@foodaidproject.org">info@foodaidproject.org</a></span>
-    </div>
-  </div>
-</footer>
-
-<script>
-  // Accessible mobile nav toggle
-  (function(){
-    var btn = document.querySelector('.nav-toggle');
-    var nav = document.getElementById('primary-nav');
-    btn.addEventListener('click', function(){
-      var open = nav.classList.toggle('open');
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    });
-    // Close menu when a link is tapped (mobile)
-    nav.addEventListener('click', function(e){
-      if(e.target.tagName === 'A' && nav.classList.contains('open')){
-        nav.classList.remove('open');
-        btn.setAttribute('aria-expanded','false');
-        btn.setAttribute('aria-label','Open menu');
-      }
-    });
-  })();
-</script>
+  </footer>
+  <script src="assets/site-v2.js"></script>
 </body>
 </html>

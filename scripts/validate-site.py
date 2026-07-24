@@ -70,7 +70,7 @@ def main() -> int:
             check_javascript(script, f"{path.name}: inline script {number}", failures)
 
     required = {
-        "index.html": ["/service-corps.html", "/privacy.html", "Skills for Food Security Service Corps"],
+        "index.html": ["service-corps.html", "privacy.html", "Skills for Food Security Service Corps"],
         "service-corps.html": [
             'id="intake-form"',
             'name="serviceFormat" value="Remote"',
@@ -78,8 +78,8 @@ def main() -> int:
             "Outreach, social media, digital content, or influencer ambassador",
             "Food Aid Project does not currently manage in-person volunteer programs",
             "info@foodaidproject.org",
-            "/privacy.html",
-            "/service-corps-config.js",
+            "privacy.html",
+            "service-corps-config.js",
         ],
         "privacy.html": ["info@foodaidproject.org", "request correction or deletion"],
         "service-corps-config.js": ["endpoint:", "responseOrigins"],

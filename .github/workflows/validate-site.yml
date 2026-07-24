@@ -27,9 +27,9 @@ jobs:
       - name: Validate HTML and inline JavaScript
         run: python scripts/validate-site.py
 
-      - name: Install Playwright
+      - name: Install dependencies and Chromium
         run: |
-          npm install --no-save playwright@1.53.2
+          npm ci
           npx playwright install --with-deps chromium
 
       - name: Start local site
@@ -41,10 +41,11 @@ jobs:
       - name: Run rendered browser verification
         run: node scripts/browser-check.mjs
 
-      - name: Upload rendered proof
+      - name: Upload rendered proof and diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: service-corps-rendered-proof
-          path: artifacts/site-proof
+          name: site-validation-evidence
+          path: artifacts
           if-no-files-found: warn
+          retention-days: 14
